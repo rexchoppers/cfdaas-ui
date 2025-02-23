@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import {useEffect, useState} from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
@@ -8,32 +8,37 @@ import {
     CssBaseline,
     Divider,
     Drawer,
-    IconButton,
+    IconButton, Theme,
     Toolbar,
-    Typography
+    Typography, useMediaQuery
 } from "@mui/material";
 
 const drawerWidth = 240;
 
 function App() {
+    const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
     // @ts-ignore
-    const [open, setOpen] = useState<boolean>(true);
+    const [open, setOpen] = useState<boolean>(!isMobile);
 
-  const [count, setCount] = useState(0)
+    // const [count, setCount] = useState(0)
 
     const toggleDrawer = () => {
-      console.log('toggleDrawer')
+        setOpen(!open);
     }
 
+    useEffect(() => {
+        setOpen(!isMobile);
+    }, [isMobile]);
+
     return (
-        <Box sx={{ display: "flex" }}>
-            <CssBaseline />
+        <Box sx={{display: "flex"}}>
+            <CssBaseline/>
 
             {/* Top App Bar */}
-            <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+            <AppBar position="fixed" sx={{zIndex: (theme) => theme.zIndex.drawer + 1}}>
                 <Toolbar>
-                    <IconButton color="inherit" edge="start" onClick={toggleDrawer} sx={{ mr: 2 }}>
-                        {/*<MenuIcon />*/}
+                    <IconButton color="inherit" edge="start" onClick={toggleDrawer} sx={{mr: 2}}>
+                        {/*<MenuIcon/>*/}
                     </IconButton>
                     <Typography variant="h6" noWrap>
                         My Dashboard
@@ -41,47 +46,49 @@ function App() {
                 </Toolbar>
             </AppBar>
 
-            {/* Sidebar (Drawer) */}
+            {/* Sidebar (Drawer) - Responsive */}
             <Drawer
-                variant="permanent"
+                variant={isMobile ? "temporary" : "permanent"}
                 open={open}
+                onClose={toggleDrawer}
                 sx={{
-                    width: open ? drawerWidth : 60,
+                    width: isMobile ? 0 : drawerWidth,
                     flexShrink: 0,
                     "& .MuiDrawer-paper": {
-                        width: open ? drawerWidth : 60,
+                        width: drawerWidth,
                         transition: "width 0.3s",
                         overflowX: "hidden",
                     },
                 }}
             >
-                <Toolbar />
-                <Divider />
-
+                <Toolbar/>
+                <Divider/>
+                {/*    <List>
+                    {[
+                        { text: "Dashboard", icon: <DashboardIcon /> },
+                        { text: "Settings", icon: <SettingsIcon /> },
+                        { text: "Logout", icon: <LogoutIcon /> },
+                    ].map((item) => (
+                        <ListItem button key={item.text}>
+                            <ListItemIcon>{item.icon}</ListItemIcon>
+                            <ListItemText primary={item.text} />
+                        </ListItem>
+                    ))}
+                </List>*/}
             </Drawer>
 
             {/* Main Content */}
-            <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
-                {/* Vite + React content inside dashboard */}
+            <Box component="main" sx={{flexGrow: 1, p: 3, mt: 8}}>
                 <Box display="flex" justifyContent="center" gap={2}>
                     <a href="https://vite.dev" target="_blank">
-                        <img src={viteLogo} className="logo" alt="Vite logo" />
+                        <img src={viteLogo} className="logo" alt="Vite logo"/>
                     </a>
                     <a href="https://react.dev" target="_blank">
-                        <img src={reactLogo} className="logo react" alt="React logo" />
+                        <img src={reactLogo} className="logo react" alt="React logo"/>
                     </a>
                 </Box>
                 <Typography variant="h4" textAlign="center" mt={2}>
                     Vite + React
-                </Typography>
-                <Box textAlign="center" mt={3}>
-                    <button onClick={() => setCount((count) => count + 1)}>count is {count}</button>
-                    <Typography variant="body1">
-                        Edit <code>src/App.tsx</code> and save to test HMR.
-                    </Typography>
-                </Box>
-                <Typography variant="body2" textAlign="center" mt={2}>
-                    Click on the Vite and React logos to learn more.
                 </Typography>
             </Box>
         </Box>
