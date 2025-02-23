@@ -1,6 +1,4 @@
 import {useEffect, useState} from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 import {
     AppBar,
@@ -12,6 +10,7 @@ import {
     Toolbar,
     Typography, useMediaQuery
 } from "@mui/material";
+import {Routes} from "react-router-dom";
 
 const drawerWidth = 240;
 
@@ -41,7 +40,7 @@ function App() {
                         {/*<MenuIcon/>*/}
                     </IconButton>
                     <Typography variant="h6" noWrap>
-                        My Dashboard
+                        CFDAAS
                     </Typography>
                 </Toolbar>
             </AppBar>
@@ -79,17 +78,11 @@ function App() {
 
             {/* Main Content */}
             <Box component="main" sx={{flexGrow: 1, p: 3, mt: 8}}>
-                <Box display="flex" justifyContent="center" gap={2}>
-                    <a href="https://vite.dev" target="_blank">
-                        <img src={viteLogo} className="logo" alt="Vite logo"/>
-                    </a>
-                    <a href="https://react.dev" target="_blank">
-                        <img src={reactLogo} className="logo react" alt="React logo"/>
-                    </a>
-                </Box>
-                <Typography variant="h4" textAlign="center" mt={2}>
-                    Vite + React
-                </Typography>
+                <Routes>
+                    {/*<Route path="/" element={<Dashboard />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/profile" element={<Profile />} />*/}
+                </Routes>
             </Box>
         </Box>
     );
