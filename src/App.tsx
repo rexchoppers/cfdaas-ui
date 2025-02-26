@@ -1,42 +1,55 @@
-import {useEffect, useState} from 'react'
-import './App.css'
+import { useEffect, useState } from 'react';
+import './App.css';
 import {
     AppBar,
     Box,
     CssBaseline,
     Divider,
     Drawer,
-    IconButton, Theme,
+    IconButton,
+    Theme,
     Toolbar,
-    Typography, useMediaQuery
+    Typography,
+    useMediaQuery
 } from "@mui/material";
-import {Routes} from "react-router-dom";
+import { useAuth } from "react-oidc-context";
 
 const drawerWidth = 240;
 
 function App() {
+    const auth = useAuth();
     const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
+
     // @ts-ignore
     const [open, setOpen] = useState<boolean>(!isMobile);
 
-    // const [count, setCount] = useState(0)
-
     const toggleDrawer = () => {
         setOpen(!open);
-    }
+    };
 
     useEffect(() => {
         setOpen(!isMobile);
     }, [isMobile]);
 
+    // Auto redirect to sign-in if not authenticated
+    useEffect(() => {
+        if (!auth.isAuthenticated && !auth.isLoading) {
+            auth.signinRedirect();
+        }
+    }, [auth.isAuthenticated, auth.isLoading]);
+
+    if (auth.isLoading) {
+        return <div>Loading...</div>;
+    }
+
     return (
-        <Box sx={{display: "flex"}}>
-            <CssBaseline/>
+        <Box sx={{ display: "flex" }}>
+            <CssBaseline />
 
             {/* Top App Bar */}
-            <AppBar position="fixed" sx={{zIndex: (theme) => theme.zIndex.drawer + 1}}>
+            <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
                 <Toolbar>
-                    <IconButton color="inherit" edge="start" onClick={toggleDrawer} sx={{mr: 2}}>
+                    <IconButton color="inherit" edge="start" onClick={toggleDrawer} sx={{ mr: 2 }}>
                         {/*<MenuIcon/>*/}
                     </IconButton>
                     <Typography variant="h6" noWrap>
@@ -60,32 +73,17 @@ function App() {
                     },
                 }}
             >
-                <Toolbar/>
-                <Divider/>
-                {/*    <List>
-                    {[
-                        { text: "Dashboard", icon: <DashboardIcon /> },
-                        { text: "Settings", icon: <SettingsIcon /> },
-                        { text: "Logout", icon: <LogoutIcon /> },
-                    ].map((item) => (
-                        <ListItem button key={item.text}>
-                            <ListItemIcon>{item.icon}</ListItemIcon>
-                            <ListItemText primary={item.text} />
-                        </ListItem>
-                    ))}
-                </List>*/}
+                <Toolbar />
+                <Divider />
+                {/* Sidebar Menu */}
             </Drawer>
 
             {/* Main Content */}
-            <Box component="main" sx={{flexGrow: 1, p: 3, mt: 8}}>
-                <Routes>
-                    {/*<Route path="/" element={<Dashboard />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/profile" element={<Profile />} />*/}
-                </Routes>
+            <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
+                {/* Routes and Page Content */}
             </Box>
         </Box>
     );
 }
 
-export default App
+export default App;
