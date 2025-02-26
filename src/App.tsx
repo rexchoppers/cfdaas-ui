@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import './App.css';
 import {
     AppBar,
     Box,
@@ -12,12 +11,14 @@ import {
     Typography,
     useMediaQuery
 } from "@mui/material";
-import { useAuth } from "react-oidc-context";
+import {hasAuthParams, useAuth} from "react-oidc-context";
 
 const drawerWidth = 240;
 
 function App() {
     const auth = useAuth();
+    const [hasTriedSignin, setHasTriedSignin] = useState(false);
+
     const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
 
     // @ts-ignore
@@ -33,10 +34,14 @@ function App() {
 
     // Auto redirect to sign-in if not authenticated
     useEffect(() => {
-        if (!auth.isAuthenticated && !auth.isLoading) {
+        if (!hasAuthParams() &&
+            !auth.isAuthenticated && !auth.activeNavigator && !auth.isLoading &&
+            !hasTriedSignin
+        ) {
             auth.signinRedirect();
+            setHasTriedSignin(true);
         }
-    }, [auth.isAuthenticated, auth.isLoading]);
+    }, [auth, hasTriedSignin]);
 
     if (auth.isLoading) {
         return <div>Loading...</div>;

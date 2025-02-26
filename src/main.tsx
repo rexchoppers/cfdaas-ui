@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import {createTheme, CssBaseline, ThemeProvider} from "@mui/material";
 import {AuthProvider} from "react-oidc-context";
+import {WebStorageStateStore} from "oidc-client-ts";
 
 const theme = createTheme();
 
@@ -12,6 +13,7 @@ const oidcConfig = {
     redirect_uri: "http://localhost:5173",
     response_type: "code",
     scope: "email openid phone profile",
+    userStore: new WebStorageStateStore({ store: window.sessionStorage }),
 };
 
 createRoot(document.getElementById('root')!).render(
