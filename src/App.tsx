@@ -5,15 +5,25 @@ import {
     CssBaseline,
     Divider,
     Drawer,
-    IconButton,
+    IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText,
     Theme,
     Toolbar,
     Typography,
     useMediaQuery
 } from "@mui/material";
 import {hasAuthParams, useAuth} from "react-oidc-context";
+import HomeIcon from "@mui/icons-material/Home";
+import SettingsIcon from "@mui/icons-material/Settings";
+import LogoutIcon from "@mui/icons-material/Logout";
+import {Link} from "react-router-dom";
 
 const drawerWidth = 240;
+
+const pages = [
+    { text: "Home", icon: <HomeIcon />, path: "/" },
+    { text: "Settings", icon: <SettingsIcon />, path: "/settings" },
+    { text: "Logout", icon: <LogoutIcon />, path: "/logout" },
+];
 
 function App() {
     const auth = useAuth();
@@ -80,12 +90,22 @@ function App() {
             >
                 <Toolbar />
                 <Divider />
-                {/* Sidebar Menu */}
+
+                <List>
+                    {pages.map((page, index) => (
+                        <ListItem key={index} disablePadding>
+                            <ListItemButton component={Link} to={page.path}>
+                                <ListItemIcon>{page.icon}</ListItemIcon>
+                                <ListItemText primary={page.text} />
+                            </ListItemButton>
+                        </ListItem>
+                    ))}
+                </List>
             </Drawer>
 
             {/* Main Content */}
             <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
-                {/* Routes and Page Content */}
+
             </Box>
         </Box>
     );
