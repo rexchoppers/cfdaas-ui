@@ -4,6 +4,7 @@ import App from './App.tsx'
 import {createTheme, CssBaseline, ThemeProvider} from "@mui/material";
 import {AuthProvider} from "react-oidc-context";
 import {WebStorageStateStore} from "oidc-client-ts";
+import {BrowserRouter} from "react-router-dom";
 
 const theme = createTheme();
 
@@ -21,7 +22,9 @@ createRoot(document.getElementById('root')!).render(
       <AuthProvider {...oidcConfig}>
           <ThemeProvider theme={theme}>
               <CssBaseline />
-              <App />
+              <BrowserRouter>
+                  <App />
+              </BrowserRouter>
           </ThemeProvider>
       </AuthProvider>
   </StrictMode>,
