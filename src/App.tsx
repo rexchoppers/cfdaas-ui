@@ -12,16 +12,18 @@ import {
     useMediaQuery
 } from "@mui/material";
 import {hasAuthParams, useAuth} from "react-oidc-context";
-import HomeIcon from "@mui/icons-material/Home";
-import SettingsIcon from "@mui/icons-material/Settings";
+import GroupIcon from '@mui/icons-material/Group';
 import LogoutIcon from "@mui/icons-material/Logout";
+import ReceiptIcon from '@mui/icons-material/Receipt';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 import {Link} from "react-router-dom";
 
 const drawerWidth = 240;
 
 const pages = [
-    { text: "Home", icon: <HomeIcon />, path: "/" },
-    { text: "Settings", icon: <SettingsIcon />, path: "/settings" },
+    { text: 'Dashboard', icon: <DashboardIcon />, path: "/" },
+    { text: "Profiles", icon: <ReceiptIcon />, path: "/profiles" },
+    { text: "Team", icon: <GroupIcon />, path: "/team" },
     { text: "Logout", icon: <LogoutIcon />, path: "/logout" },
 ];
 
