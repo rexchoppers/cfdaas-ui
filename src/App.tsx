@@ -24,7 +24,6 @@ const pages = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: "/" },
     { text: "Profiles", icon: <ReceiptIcon />, path: "/profiles" },
     { text: "Team", icon: <GroupIcon />, path: "/team" },
-    { text: "Logout", icon: <LogoutIcon />, path: "/logout" },
 ];
 
 function App() {
@@ -93,17 +92,35 @@ function App() {
                 <Toolbar />
                 <Divider />
 
+                {/* Main Navigation Links */}
+                <Box sx={{ flexGrow: 1 }}>  {/* This ensures it takes all available space */}
+                    <List>
+                        {pages.map((page, index) => (
+                            <ListItem key={index} disablePadding>
+                                <ListItemButton component={Link} to={page.path}>
+                                    <ListItemIcon>{page.icon}</ListItemIcon>
+                                    <ListItemText primary={page.text} />
+                                </ListItemButton>
+                            </ListItem>
+                        ))}
+                    </List>
+                </Box>
+
+                <Divider />
+
+                {/* Logout Button at Bottom */}
                 <List>
-                    {pages.map((page, index) => (
-                        <ListItem key={index} disablePadding>
-                            <ListItemButton component={Link} to={page.path}>
-                                <ListItemIcon>{page.icon}</ListItemIcon>
-                                <ListItemText primary={page.text} />
-                            </ListItemButton>
-                        </ListItem>
-                    ))}
+                    <ListItem disablePadding>
+                        <ListItemButton component={Link} to="/logout">
+                            <ListItemIcon><LogoutIcon /></ListItemIcon>
+                            <ListItemText primary="Logout" />
+                        </ListItemButton>
+                    </ListItem>
                 </List>
+
+
             </Drawer>
+
 
             {/* Main Content */}
             <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
