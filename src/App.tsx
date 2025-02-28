@@ -16,6 +16,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import LogoutIcon from "@mui/icons-material/Logout";
 import StorageIcon from '@mui/icons-material/Storage';
 import ReceiptIcon from '@mui/icons-material/Receipt';
+import CloudSyncIcon from '@mui/icons-material/CloudSync';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import {Link} from "react-router-dom";
 
@@ -23,6 +24,7 @@ const drawerWidth = 240;
 
 const pages = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: "/" },
+    { text: "Processes", icon: <CloudSyncIcon />, path: "/processes" },
     { text: "Instances", icon: <StorageIcon />, path: "/instances" },
     { text: "Profiles", icon: <ReceiptIcon />, path: "/profiles" },
     { text: "Team", icon: <GroupIcon />, path: "/team" },
