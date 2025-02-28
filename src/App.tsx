@@ -14,6 +14,7 @@ import {
 import {hasAuthParams, useAuth} from "react-oidc-context";
 import GroupIcon from '@mui/icons-material/Group';
 import LogoutIcon from "@mui/icons-material/Logout";
+import StorageIcon from '@mui/icons-material/Storage';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import {Link} from "react-router-dom";
@@ -22,6 +23,7 @@ const drawerWidth = 240;
 
 const pages = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: "/" },
+    { text: "Instances", icon: <StorageIcon />, path: "/instances" },
     { text: "Profiles", icon: <ReceiptIcon />, path: "/profiles" },
     { text: "Team", icon: <GroupIcon />, path: "/team" },
 ];
