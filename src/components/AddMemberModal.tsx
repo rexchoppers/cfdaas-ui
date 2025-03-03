@@ -28,8 +28,8 @@ export default function AddMemberModal({ open, onClose, onSubmit }: AddMemberMod
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
             <DialogTitle>Add New Member</DialogTitle>
-            <DialogContent>
-                <Grid container spacing={2} sx={{ mt: 1 }}>
+            <DialogContent sx={{ pb: 3 }}>  {/* Adds padding below the input fields */}
+                <Grid container spacing={2}>
                     <Grid item xs={12}>
                         <TextField
                             fullWidth
@@ -56,8 +56,10 @@ export default function AddMemberModal({ open, onClose, onSubmit }: AddMemberMod
                     </Grid>
                 </Grid>
             </DialogContent>
-            <DialogActions>
-                <Button onClick={onClose}>Cancel</Button>
+            <DialogActions sx={{ px: 3, pb: 2, justifyContent: "space-between" }}>
+                <Button onClick={onClose} color="secondary">
+                    Cancel
+                </Button>
                 <Button variant="contained" onClick={handleSubmit}>
                     Add
                 </Button>
