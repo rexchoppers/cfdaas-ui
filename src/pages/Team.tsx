@@ -1,39 +1,36 @@
-import {useState} from "react";
+import { useState } from "react";
 import {
     Box,
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    Grid,
     IconButton,
     Menu,
-    MenuItem, SpeedDial, SpeedDialAction, SpeedDialIcon,
-    TextField,
+    MenuItem,
+    SpeedDial,
+    SpeedDialAction,
+    SpeedDialIcon,
     Typography
 } from "@mui/material";
-import {DataGrid, GridColDef, GridRowEditStopReasons} from "@mui/x-data-grid";
+import { DataGrid, GridColDef, GridRowEditStopReasons } from "@mui/x-data-grid";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
+import AddMemberModal from "../components/AddMemberModal"; // Import the new modal component
 
 export default function TeamPage() {
     const [team, setTeam] = useState([
-        {id: 1, name: "Alice Johnson", role: "Admin", email: "alice@example.com"},
-        {id: 2, name: "Bob Smith", role: "Editor", email: "bob@example.com"},
-        {id: 3, name: "Charlie Davis", role: "Viewer", email: "charlie@example.com"}
+        { id: 1, name: "Alice Johnson", role: "Admin", email: "alice@example.com" },
+        { id: 2, name: "Bob Smith", role: "Editor", email: "bob@example.com" },
+        { id: 3, name: "Charlie Davis", role: "Viewer", email: "charlie@example.com" }
     ]);
 
     const [menuAnchor, setMenuAnchor] = useState<{ [key: number]: HTMLElement | null }>({});
 
     const handleOpenMenu = (event: React.MouseEvent<HTMLElement>, id: number) => {
-        setMenuAnchor({...menuAnchor, [id]: event.currentTarget});
+        setMenuAnchor({ ...menuAnchor, [id]: event.currentTarget });
     };
 
     const handleCloseMenu = (id: number) => {
-        setMenuAnchor({...menuAnchor, [id]: null});
+        setMenuAnchor({ ...menuAnchor, [id]: null });
     };
 
     const handleDelete = (id: number) => {
@@ -41,9 +38,9 @@ export default function TeamPage() {
     };
 
     const columns: GridColDef[] = [
-        {field: "name", headerName: "Name", flex: 1, editable: true},
-        {field: "role", headerName: "Role", flex: 1, editable: true},
-        {field: "email", headerName: "Email", flex: 1},
+        { field: "name", headerName: "Name", flex: 1, editable: true },
+        { field: "role", headerName: "Role", flex: 1, editable: true },
+        { field: "email", headerName: "Email", flex: 1 },
         {
             field: "actions",
             headerName: "Actions",
@@ -51,7 +48,7 @@ export default function TeamPage() {
             renderCell: (params) => (
                 <>
                     <IconButton onClick={(e) => handleOpenMenu(e, params.id as number)}>
-                        <MoreVertIcon/>
+                        <MoreVertIcon />
                     </IconButton>
                     <Menu
                         anchorEl={menuAnchor[params.id as number]}
@@ -59,10 +56,10 @@ export default function TeamPage() {
                         onClose={() => handleCloseMenu(params.id as number)}
                     >
                         <MenuItem onClick={() => alert(`Editing ${params.row.name}`)}>
-                            <EditIcon sx={{mr: 1}}/> Edit
+                            <EditIcon sx={{ mr: 1 }} /> Edit
                         </MenuItem>
-                        <MenuItem onClick={() => handleDelete(params.id as number)} sx={{color: "red"}}>
-                            <DeleteIcon sx={{mr: 1}}/> Delete
+                        <MenuItem onClick={() => handleDelete(params.id as number)} sx={{ color: "red" }}>
+                            <DeleteIcon sx={{ mr: 1 }} /> Delete
                         </MenuItem>
                     </Menu>
                 </>
@@ -71,24 +68,20 @@ export default function TeamPage() {
         }
     ];
 
-    // ✅ MODAL STATE FOR ADDING A USER
-    const [isAddOpen, setIsAddOpen] = useState(false);
-    const [newMember, setNewMember] = useState({name: "", role: "", email: ""});
+    // ✅ STATE FOR ADDING A USER
+    const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
 
-    const handleAddMember = () => {
-        if (!newMember.name || !newMember.role || !newMember.email) return;
-        setTeam((prev) => [...prev, {id: Date.now(), ...newMember}]);
-        setNewMember({name: "", role: "", email: ""}); // Reset fields
-        setIsAddOpen(false);
+    const handleAddMember = (newMember: { name: string; role: string; email: string }) => {
+        setTeam((prev) => [...prev, { id: Date.now(), ...newMember }]);
     };
 
     // ✅ FAB MENU ACTIONS
     const actions = [
-        {icon: <AddIcon/>, name: "Add User", onClick: () => setIsAddOpen(true)},
+        { icon: <AddIcon />, name: "Add User", onClick: () => setIsAddMemberOpen(true) },
     ];
 
     return (
-        <Box sx={{p: 3, position: "relative"}}>
+        <Box sx={{ p: 3, position: "relative" }}>
             {/* Header */}
             <Typography variant="h4" gutterBottom>
                 Team Management
@@ -103,7 +96,7 @@ export default function TeamPage() {
                 processRowUpdate={(params) =>
                     setTeam((prev) =>
                         prev.map((member) =>
-                            member.id === params.id ? {...member, [params.field]: params.value} : member
+                            member.id === params.id ? { ...member, [params.field]: params.value } : member
                         )
                     )
                 }
@@ -117,8 +110,8 @@ export default function TeamPage() {
             {/* Floating Action Button (SpeedDial) */}
             <SpeedDial
                 ariaLabel="Team Actions"
-                sx={{position: "fixed", bottom: 16, right: 16}}
-                icon={<SpeedDialIcon/>}
+                sx={{ position: "fixed", bottom: 16, right: 16 }}
+                icon={<SpeedDialIcon />}
             >
                 {actions.map((action) => (
                     <SpeedDialAction
@@ -130,44 +123,12 @@ export default function TeamPage() {
                 ))}
             </SpeedDial>
 
-            {/* Add Member Dialog (Modal) */}
-            <Dialog open={isAddOpen} onClose={() => setIsAddOpen(false)} fullWidth maxWidth="sm">
-                <DialogTitle>Add New Member</DialogTitle>
-                <DialogContent>
-                    <Grid container spacing={2} sx={{mt: 1}}>
-                        <Grid item xs={12}>
-                            <TextField
-                                fullWidth
-                                label="Name"
-                                value={newMember.name}
-                                onChange={(e) => setNewMember({...newMember, name: e.target.value})}
-                            />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField
-                                fullWidth
-                                label="Role"
-                                value={newMember.role}
-                                onChange={(e) => setNewMember({...newMember, role: e.target.value})}
-                            />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField
-                                fullWidth
-                                label="Email"
-                                value={newMember.email}
-                                onChange={(e) => setNewMember({...newMember, email: e.target.value})}
-                            />
-                        </Grid>
-                    </Grid>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setIsAddOpen(false)}>Cancel</Button>
-                    <Button variant="contained" onClick={handleAddMember}>
-                        Add
-                    </Button>
-                </DialogActions>
-            </Dialog>
+            {/* Add Member Modal (Now a Separate Component) */}
+            <AddMemberModal
+                open={isAddMemberOpen}
+                onClose={() => setIsAddMemberOpen(false)}
+                onSubmit={handleAddMember}
+            />
         </Box>
     );
 }
