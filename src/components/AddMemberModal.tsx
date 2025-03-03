@@ -27,8 +27,10 @@ export default function AddMemberModal({ open, onClose, onSubmit }: AddMemberMod
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-            <DialogTitle>Add New Member</DialogTitle>
-            <DialogContent sx={{ pb: 3 }}>  {/* Adds padding below the input fields */}
+            <DialogTitle sx={{ pb: 2 }}> {/* Adds space below the title */}
+                Add New Member
+            </DialogTitle>
+            <DialogContent sx={{ overflow: "visible", pt: 1, pb: 3 }}> {/* Adds space above inputs */}
                 <Grid container spacing={2}>
                     <Grid item xs={12}>
                         <TextField
@@ -36,6 +38,8 @@ export default function AddMemberModal({ open, onClose, onSubmit }: AddMemberMod
                             label="Name"
                             value={newMember.name}
                             onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
+                            helperText="Enter the full name"
+                            sx={{ mt: 1 }} // Adds extra spacing above the first input
                         />
                     </Grid>
                     <Grid item xs={12}>
@@ -44,14 +48,17 @@ export default function AddMemberModal({ open, onClose, onSubmit }: AddMemberMod
                             label="Role"
                             value={newMember.role}
                             onChange={(e) => setNewMember({ ...newMember, role: e.target.value })}
+                            helperText="Specify the user's role"
                         />
                     </Grid>
                     <Grid item xs={12}>
                         <TextField
                             fullWidth
                             label="Email"
+                            type="email"
                             value={newMember.email}
                             onChange={(e) => setNewMember({ ...newMember, email: e.target.value })}
+                            helperText="Provide a valid email address"
                         />
                     </Grid>
                 </Grid>
