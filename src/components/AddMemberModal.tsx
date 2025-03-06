@@ -165,11 +165,16 @@ export default function AddMemberModal({open, onClose, onSubmit}: AddMemberModal
                                 </Grid>
                             </Grid>
 
-                            {/* Buttons */}
-                            <DialogActions sx={{px: 3, pb: 2, justifyContent: "space-between"}}>
-                                <Button onClick={onClose} color="secondary">Cancel</Button>
-                                <Button variant="contained" type="submit">Add</Button>
+                            <DialogActions sx={{  pt: 2, px: 0, display: "flex", justifyContent: "flex-end", gap: 2 }}>
+                                <Button onClick={onClose} variant="contained" color="inherit">
+                                    Cancel
+                                </Button>
+                                <Button type="submit" variant="contained">
+                                    Add
+                                </Button>
                             </DialogActions>
+
+
                         </Form>
                     )}
                 </Formik>
