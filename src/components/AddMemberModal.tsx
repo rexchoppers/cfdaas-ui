@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import {useEffect, useState} from "react";
 import {
     Dialog,
     DialogActions,
@@ -13,6 +13,11 @@ import {
     FormControl,
     CircularProgress
 } from "@mui/material";
+import {Formik, Form} from "formik";
+import * as Yup from "yup";
+
+// Define the type for access levels
+type AccessLevel = "owner" | "admin" | "editor" | "viewer";
 
 // Define the props for the modal
 interface AddMemberModalProps {
@@ -21,18 +26,16 @@ interface AddMemberModalProps {
     onSubmit: (member: { firstName: string; lastName: string; email: string; password: string; role: string }) => void;
 }
 
-// Define the type for access levels
-type AccessLevel = "owner" | "admin" | "editor" | "viewer";
+// **Validation Schema using Yup**
+const validationSchema = Yup.object().shape({
+    firstName: Yup.string().required("First name is required"),
+    lastName: Yup.string().required("Last name is required"),
+    email: Yup.string().email("Invalid email").required("Email is required"),
+    password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
+    role: Yup.string().required("Role is required"),
+});
 
-export default function AddMemberModal({ open, onClose, onSubmit }: AddMemberModalProps) {
-    const [newMember, setNewMember] = useState({
-        firstName: "",
-        lastName: "",
-        email: "",
-        password: "",
-        role: ""
-    });
-
+export default function AddMemberModal({open, onClose, onSubmit}: AddMemberModalProps) {
     const [accessLevels, setAccessLevels] = useState<AccessLevel[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
@@ -40,7 +43,7 @@ export default function AddMemberModal({ open, onClose, onSubmit }: AddMemberMod
     useEffect(() => {
         if (open) {
             setLoading(true);
-            fetch("/api/access-levels") // Replace with your actual API endpoint
+            fetch("/api/access-levels") // Replace with actual API
                 .then((res) => res.json())
                 .then((data) => {
                     setAccessLevels(data); // Assume API returns ["owner", "admin", "editor", "viewer"]
@@ -53,90 +56,126 @@ export default function AddMemberModal({ open, onClose, onSubmit }: AddMemberMod
         }
     }, [open]);
 
-    const handleSubmit = () => {
-        if (!newMember.firstName || !newMember.lastName || !newMember.email || !newMember.password || !newMember.role) {
-            return;
-        }
-        onSubmit(newMember);
-        setNewMember({ firstName: "", lastName: "", email: "", password: "", role: "" }); // Reset fields
-        onClose();
-    };
-
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-            <DialogTitle sx={{ pb: 2 }}>Add New Member</DialogTitle>
-            <DialogContent sx={{ overflow: "visible", pt: 1, pb: 3 }}>
-                <Grid container spacing={2}>
-                    {/* First Name & Last Name (Side by Side) */}
-                    <Grid item xs={12} md={6}>
-                        <TextField
-                            fullWidth
-                            label="First Name"
-                            value={newMember.firstName}
-                            onChange={(e) => setNewMember({ ...newMember, firstName: e.target.value })}
-                            helperText="Enter the first name"
-                        />
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                        <TextField
-                            fullWidth
-                            label="Last Name"
-                            value={newMember.lastName}
-                            onChange={(e) => setNewMember({ ...newMember, lastName: e.target.value })}
-                            helperText="Enter the last name"
-                        />
-                    </Grid>
+            <DialogTitle sx={{pb: 2}}>Add New Member</DialogTitle>
+            <DialogContent sx={{overflow: "visible", pt: 1, pb: 3}}>
+                <Formik
+                    initialValues={{
+                        firstName: "",
+                        lastName: "",
+                        email: "",
+                        password: "",
+                        role: "",
+                    }}
+                    validationSchema={validationSchema}
+                    onSubmit={(values) => {
+                        onSubmit(values);
+                        onClose();
+                    }}
+                >
+                    {({values, handleChange, handleBlur, errors, touched}) => (
+                        <Form>
+                            <Grid container spacing={2}>
+                                {/* First Name & Last Name */}
+                                <Grid item xs={12} md={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="First Name"
+                                        name="firstName"
+                                        value={values.firstName}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        error={touched.firstName && Boolean(errors.firstName)}
+                                        helperText={touched.firstName && errors.firstName}
+                                        size="small"
+                                    />
+                                </Grid>
+                                <Grid item xs={12} md={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Last Name"
+                                        name="lastName"
+                                        value={values.lastName}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        error={touched.lastName && Boolean(errors.lastName)}
+                                        helperText={touched.lastName && errors.lastName}
+                                        size="small"
+                                    />
+                                </Grid>
 
-                    {/* Email */}
-                    <Grid item xs={12}>
-                        <TextField
-                            fullWidth
-                            label="Email"
-                            type="email"
-                            value={newMember.email}
-                            onChange={(e) => setNewMember({ ...newMember, email: e.target.value })}
-                            helperText="Provide a valid email address"
-                        />
-                    </Grid>
+                                {/* Email */}
+                                <Grid item xs={12}>
+                                    <TextField
+                                        fullWidth
+                                        label="Email"
+                                        type="email"
+                                        name="email"
+                                        value={values.email}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        error={touched.email && Boolean(errors.email)}
+                                        helperText={touched.email && errors.email}
+                                        size="small"
+                                    />
+                                </Grid>
 
-                    {/* Password */}
-                    <Grid item xs={12}>
-                        <TextField
-                            fullWidth
-                            label="Password"
-                            type="password"
-                            value={newMember.password}
-                            onChange={(e) => setNewMember({ ...newMember, password: e.target.value })}
-                            helperText="Enter a secure password"
-                        />
-                    </Grid>
+                                {/* Password */}
+                                <Grid item xs={12}>
+                                    <TextField
+                                        fullWidth
+                                        label="Password"
+                                        type="password"
+                                        name="password"
+                                        value={values.password}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        error={touched.password && Boolean(errors.password)}
+                                        helperText={touched.password && errors.password}
+                                        size="small"
+                                    />
+                                </Grid>
 
-                    {/* Role Dropdown */}
-                    <Grid item xs={12}>
-                        {loading ? (
-                            <CircularProgress size={24} />
-                        ) : (
-                            <FormControl fullWidth>
-                                <InputLabel>Role</InputLabel>
-                                <Select
-                                    value={newMember.role}
-                                    onChange={(e) => setNewMember({ ...newMember, role: e.target.value })}
-                                >
-                                    {accessLevels.map((level) => (
-                                        <MenuItem key={level} value={level}>
-                                            {level.charAt(0).toUpperCase() + level.slice(1)}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                        )}
-                    </Grid>
-                </Grid>
+                                {/* Role Dropdown */}
+                                <Grid item xs={12}>
+                                    {loading ? (
+                                        <CircularProgress size={24}/>
+                                    ) : (
+                                        <FormControl fullWidth size="small"
+                                                     error={touched.role && Boolean(errors.role)}>
+                                            <InputLabel shrink>Role</InputLabel>
+                                            <Select
+                                                name="role"
+                                                value={values.role}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                displayEmpty
+                                            >
+                                                <MenuItem disabled value="">Select a role</MenuItem>
+                                                {accessLevels.map((level) => (
+                                                    <MenuItem key={level} value={level}>
+                                                        {level.charAt(0).toUpperCase() + level.slice(1)}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                            {touched.role && errors.role && (
+                                                <p style={{color: "red", margin: 0}}>{errors.role}</p>
+                                            )}
+                                        </FormControl>
+                                    )}
+                                </Grid>
+                            </Grid>
+
+                            {/* Buttons */}
+                            <DialogActions sx={{px: 3, pb: 2, justifyContent: "space-between"}}>
+                                <Button onClick={onClose} color="secondary">Cancel</Button>
+                                <Button variant="contained" type="submit">Add</Button>
+                            </DialogActions>
+                        </Form>
+                    )}
+                </Formik>
             </DialogContent>
-            <DialogActions sx={{ px: 3, pb: 2, justifyContent: "space-between" }}>
-                <Button onClick={onClose} color="secondary">Cancel</Button>
-                <Button variant="contained" onClick={handleSubmit}>Add</Button>
-            </DialogActions>
         </Dialog>
     );
 }
