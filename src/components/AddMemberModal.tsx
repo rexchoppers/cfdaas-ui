@@ -26,6 +26,9 @@ interface AddMemberModalProps {
     onSubmit: (member: { firstName: string; lastName: string; email: string; password: string; role: string }) => void;
 }
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+
 // **Validation Schema using Yup**
 const validationSchema = Yup.object().shape({
     firstName: Yup.string().required("First name is required"),
@@ -43,7 +46,7 @@ export default function AddMemberModal({open, onClose, onSubmit}: AddMemberModal
     useEffect(() => {
         if (open) {
             setLoading(true);
-            fetch("/api/access-levels") // Replace with actual API
+            fetch(`${API_BASE_URL}/access/level`)
                 .then((res) => res.json())
                 .then((data) => {
                     setAccessLevels(data); // Assume API returns ["owner", "admin", "editor", "viewer"]
