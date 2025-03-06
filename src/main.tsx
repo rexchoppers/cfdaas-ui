@@ -15,6 +15,8 @@ const oidcConfig = {
     response_type: "code",
     scope: "email openid phone profile",
     userStore: new WebStorageStateStore({ store: window.sessionStorage }),
+    automaticSilentRenew: true,
+    loadUserInfo: true,
 };
 
 createRoot(document.getElementById('root')!).render(
