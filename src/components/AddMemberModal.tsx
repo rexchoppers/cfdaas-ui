@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import {Formik, Form} from "formik";
 import * as Yup from "yup";
+import {useAuth} from "react-oidc-context";
 
 // Define the type for access levels
 type AccessLevel = "owner" | "admin" | "editor" | "viewer";
@@ -36,6 +37,7 @@ const validationSchema = Yup.object().shape({
 });
 
 export default function AddMemberModal({open, onClose, onSubmit}: AddMemberModalProps) {
+    const auth = useAuth();
     const [accessLevels, setAccessLevels] = useState<AccessLevel[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
@@ -43,7 +45,13 @@ export default function AddMemberModal({open, onClose, onSubmit}: AddMemberModal
     useEffect(() => {
         if (open) {
             setLoading(true);
-            fetch(`${API_BASE_URL}/access/level`)
+            fetch(`${API_BASE_URL}/access/level`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${auth.user?.access_token}`,
+                    "Content-Type": "application/json",
+                },
+            })
                 .then((res) => res.json())
                 .then((data) => {
                     setAccessLevels(data); // Assume API returns ["owner", "admin", "editor", "viewer"]
