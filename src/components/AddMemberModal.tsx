@@ -7,10 +7,7 @@ import {
     Grid,
     Button,
     TextField,
-    Select,
     MenuItem,
-    InputLabel,
-    FormControl,
     CircularProgress
 } from "@mui/material";
 import {Formik, Form} from "formik";
@@ -140,32 +137,30 @@ export default function AddMemberModal({open, onClose, onSubmit}: AddMemberModal
                                     />
                                 </Grid>
 
-                                {/* Role Dropdown */}
+                                {/* Role Dropdown (Fixed) */}
                                 <Grid item xs={12}>
                                     {loading ? (
-                                        <CircularProgress size={24}/>
+                                        <CircularProgress size={24} />
                                     ) : (
-                                        <FormControl fullWidth size="small"
-                                                     error={touched.role && Boolean(errors.role)}>
-                                            <InputLabel shrink>Role</InputLabel>
-                                            <Select
-                                                name="role"
-                                                value={values.role}
-                                                onChange={handleChange}
-                                                onBlur={handleBlur}
-                                                displayEmpty
-                                            >
-                                                <MenuItem disabled value="">Select a role</MenuItem>
-                                                {accessLevels.map((level) => (
-                                                    <MenuItem key={level} value={level}>
-                                                        {level.charAt(0).toUpperCase() + level.slice(1)}
-                                                    </MenuItem>
-                                                ))}
-                                            </Select>
-                                            {touched.role && errors.role && (
-                                                <p style={{color: "red", margin: 0}}>{errors.role}</p>
-                                            )}
-                                        </FormControl>
+                                        <TextField
+                                            select
+                                            fullWidth
+                                            size="small"
+                                            label="Role"
+                                            name="role"
+                                            value={values.role}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.role && Boolean(errors.role)}
+                                            helperText={touched.role && errors.role}
+                                        >
+                                            <MenuItem disabled value="">Select a role</MenuItem>
+                                            {accessLevels.map((level) => (
+                                                <MenuItem key={level} value={level}>
+                                                    {level.charAt(0).toUpperCase() + level.slice(1)}
+                                                </MenuItem>
+                                            ))}
+                                        </TextField>
                                     )}
                                 </Grid>
                             </Grid>
