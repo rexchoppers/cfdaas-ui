@@ -48,7 +48,7 @@ export default function AddMemberModal({open, onClose, onSubmit}: AddMemberModal
             fetch(`${API_BASE_URL}/access/level`, {
                 method: "GET",
                 headers: {
-                    "Authorization": `Bearer ${auth.user?.access_token}`,
+                    "Authorization": `Bearer ${auth.user?.id_token}`,
                     "Content-Type": "application/json",
                 },
             })
