@@ -56,38 +56,38 @@ export default function Layout() {
         setOpen(!isMobile);
     }, [isMobile]);
 
-    // Auto redirect to sign-in if not authenticated
     useEffect(() => {
         if (!hasAuthParams() &&
             !auth.isAuthenticated && !auth.activeNavigator && !auth.isLoading &&
             !hasTriedSignin
         ) {
+            setHasTriedSignin(true);  // ✅ Move this above signinRedirect() to prevent loop
             auth.signinRedirect();
-            setHasTriedSignin(true);
         }
-    }, [auth, hasTriedSignin]);
+    }, [auth, hasTriedSignin]); // ✅ No need for additional dependencies
 
     useEffect(() => {
-        if (!auth.isAuthenticated) return;
+        if (!auth.isAuthenticated || !auth.user) return; // ✅ Ensure auth is ready before calling API
 
         const fetchCompanies = async () => {
-            const response = await authRequest(auth, `${API_BASE_URL}/access`);
-            if (response && response.ok) {
+            try {
+                const response = await authRequest(auth, `${API_BASE_URL}/access`);
+                if (!response || !response.ok) throw new Error("Failed to fetch companies");
+
                 const data: Access[] = await response.json();
 
-                const companies = R.map(data, (access) => access.company);
+                // ✅ Ensure `setCompanies` does not cause unnecessary re-renders
+                setCompanies(prev => prev.length === data.length ? prev : data.map(access => access.company));
 
-                setCompanies(companies);
-                if (data.length > 0) {
-                    setSelectedCompany(companies[0]);
-                }
-            } else {
-                console.error("Failed to fetch companies");
+                // ✅ Only update selected company if it hasn't been set yet
+                setSelectedCompany(prev => prev || (data.length > 0 ? data[0].company : null));
+            } catch (error) {
+                console.error("Error fetching companies:", error);
             }
         };
 
         fetchCompanies();
-    }, [auth.user, setSelectedCompany]);
+    }, [auth.user]); // ✅ Only re-run when user changes
 
     if (auth.isLoading) {
         return <div>Loading...</div>;
