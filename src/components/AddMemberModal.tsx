@@ -63,7 +63,7 @@ export default function AddMemberModal({ open, onClose, onSubmit }: AddMemberMod
 
     const handleSubmit = async (values: { firstName: string; lastName: string; email: string; password: string; level: string }) => {
         try {
-            const response = await fetch(`${API_BASE_URL}/${company.selectedCompany.id}/team`, {
+            const response = await fetch(`${API_BASE_URL}/company/${company.selectedCompany.id}/team`, {
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${auth.user?.id_token}`,
