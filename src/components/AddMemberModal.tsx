@@ -13,6 +13,7 @@ import {
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import { useAuth } from "react-oidc-context";
+import {useCompany} from "../context/CompanyContext.tsx";
 
 type AccessLevel = "owner" | "admin" | "editor" | "viewer";
 
@@ -34,6 +35,7 @@ const validationSchema = Yup.object().shape({
 
 export default function AddMemberModal({ open, onClose, onSubmit }: AddMemberModalProps) {
     const auth = useAuth();
+    const company = useCompany();
     const [accessLevels, setAccessLevels] = useState<AccessLevel[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
@@ -61,7 +63,7 @@ export default function AddMemberModal({ open, onClose, onSubmit }: AddMemberMod
 
     const handleSubmit = async (values: { firstName: string; lastName: string; email: string; password: string; level: string }) => {
         try {
-            const response = await fetch(`${API_BASE_URL}/new-endpoint`, {
+            const response = await fetch(`${API_BASE_URL}/${company.selectedCompany.id}/team`, {
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${auth.user?.id_token}`,
