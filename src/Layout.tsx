@@ -40,7 +40,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export default function Layout() {
     const auth = useAuth();
     const [hasTriedSignin, setHasTriedSignin] = useState(false);
-    const { selectedCompany, setSelectedCompany } = useCompany();
+    const {selectedCompany, setSelectedCompany} = useCompany();
     const [companies, setCompanies] = useState([] as Company[]);
 
     const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
@@ -56,38 +56,38 @@ export default function Layout() {
         setOpen(!isMobile);
     }, [isMobile]);
 
+    // Auto redirect to sign-in if not authenticated
     useEffect(() => {
         if (!hasAuthParams() &&
             !auth.isAuthenticated && !auth.activeNavigator && !auth.isLoading &&
             !hasTriedSignin
         ) {
-            setHasTriedSignin(true);  // ✅ Move this above signinRedirect() to prevent loop
             auth.signinRedirect();
+            setHasTriedSignin(true);
         }
-    }, [auth, hasTriedSignin]); // ✅ No need for additional dependencies
+    }, [auth, hasTriedSignin]);
 
     useEffect(() => {
-        if (!auth.isAuthenticated || !auth.user) return; // ✅ Ensure auth is ready before calling API
+        if (!auth.isAuthenticated) return;
 
         const fetchCompanies = async () => {
-            try {
-                const response = await authRequest(auth, `${API_BASE_URL}/access`);
-                if (!response || !response.ok) throw new Error("Failed to fetch companies");
-
+            const response = await authRequest(auth, `${API_BASE_URL}/access`);
+            if (response && response.ok) {
                 const data: Access[] = await response.json();
 
-                // ✅ Ensure `setCompanies` does not cause unnecessary re-renders
-                setCompanies(prev => prev.length === data.length ? prev : data.map(access => access.company));
+                const companies = R.map(data, (access) => access.company);
 
-                // ✅ Only update selected company if it hasn't been set yet
-                setSelectedCompany(prev => prev || (data.length > 0 ? data[0].company : null));
-            } catch (error) {
-                console.error("Error fetching companies:", error);
+                setCompanies(companies);
+                if (data.length > 0) {
+                    setSelectedCompany(companies[0]);
+                }
+            } else {
+                console.error("Failed to fetch companies");
             }
         };
 
         fetchCompanies();
-    }, [auth.user]); // ✅ Only re-run when user changes
+    }, [auth.user, setSelectedCompany]);
 
     if (auth.isLoading) {
         return <div>Loading...</div>;

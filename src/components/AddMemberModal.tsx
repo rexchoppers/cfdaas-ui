@@ -19,7 +19,7 @@ type AccessLevel = "owner" | "admin" | "editor" | "viewer";
 interface AddMemberModalProps {
     open: boolean;
     onClose: () => void;
-    onSubmit: (member: { firstName: string; lastName: string; email: string; password: string; role: string }) => void;
+    onSubmit: (member: { firstName: string; lastName: string; email: string; password: string; level: string }) => void;
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -29,7 +29,7 @@ const validationSchema = Yup.object().shape({
     lastName: Yup.string().required("Last name is required"),
     email: Yup.string().email("Invalid email").required("Email is required"),
     password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
-    role: Yup.string().required("Role is required"),
+    level: Yup.string().required("Role is required"),
 });
 
 export default function AddMemberModal({ open, onClose, onSubmit }: AddMemberModalProps) {
@@ -59,7 +59,7 @@ export default function AddMemberModal({ open, onClose, onSubmit }: AddMemberMod
         }
     }, [open]);
 
-    const handleSubmit = async (values: { firstName: string; lastName: string; email: string; password: string; role: string }) => {
+    const handleSubmit = async (values: { firstName: string; lastName: string; email: string; password: string; level: string }) => {
         try {
             const response = await fetch(`${API_BASE_URL}/new-endpoint`, {
                 method: "POST",
@@ -98,7 +98,7 @@ export default function AddMemberModal({ open, onClose, onSubmit }: AddMemberMod
                         lastName: "",
                         email: "",
                         password: "",
-                        role: "",
+                        level: "",
                     }}
                     validationSchema={validationSchema}
                     onSubmit={handleSubmit}
@@ -169,14 +169,14 @@ export default function AddMemberModal({ open, onClose, onSubmit }: AddMemberMod
                                             fullWidth
                                             size="small"
                                             label="Role"
-                                            name="role"
-                                            value={values.role}
+                                            name="level"
+                                            value={values.level}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
-                                            error={touched.role && Boolean(errors.role)}
-                                            helperText={touched.role && errors.role}
+                                            error={touched.level && Boolean(errors.level)}
+                                            helperText={touched.level && errors.level}
                                         >
-                                            <MenuItem disabled value="">Select a role</MenuItem>
+                                            <MenuItem disabled value="">Select a level</MenuItem>
                                             {accessLevels.map((level) => (
                                                 <MenuItem key={level} value={level}>
                                                     {level.charAt(0).toUpperCase() + level.slice(1)}
