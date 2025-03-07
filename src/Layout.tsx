@@ -22,6 +22,8 @@ import GroupIcon from "@mui/icons-material/Group";
 import {useCompany} from "./context/CompanyContext.tsx";
 import {Company} from "./types/Company.ts";
 import {authRequest} from "./utils/AuthenticatedRequestUtil.ts";
+import {Access} from "./types/Access.ts";
+import * as R from "remeda";
 
 const drawerWidth = 240;
 
@@ -71,10 +73,13 @@ export default function Layout() {
         const fetchCompanies = async () => {
             const response = await authRequest(auth, `${API_BASE_URL}/access`);
             if (response && response.ok) {
-                const data: Company[] = await response.json();
-                setCompanies(data);
+                const data: Access[] = await response.json();
+
+                const companies = R.map(data, (access) => access.company);
+
+                setCompanies(companies);
                 if (data.length > 0) {
-                    setSelectedCompany(data[0]);
+                    setSelectedCompany(companies[0]);
                 }
             } else {
                 console.error("Failed to fetch companies");
