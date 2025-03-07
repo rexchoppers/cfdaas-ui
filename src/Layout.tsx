@@ -19,6 +19,9 @@ import CloudSyncIcon from "@mui/icons-material/CloudSync";
 import StorageIcon from "@mui/icons-material/Storage";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import GroupIcon from "@mui/icons-material/Group";
+import {useCompany} from "./context/CompanyContext.tsx";
+import {Company} from "./types/Company.ts";
+import {authRequest} from "./utils/AuthenticatedRequestUtil.ts";
 
 const drawerWidth = 240;
 
@@ -30,9 +33,13 @@ const pages = [
     {text: "Team", icon: <GroupIcon/>, path: "/team"},
 ];
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export default function Layout() {
     const auth = useAuth();
     const [hasTriedSignin, setHasTriedSignin] = useState(false);
+    const { selectedCompany, setSelectedCompany } = useCompany();
+    const [companies, setCompanies] = useState([] as Company[]);
 
     const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
 
@@ -57,6 +64,25 @@ export default function Layout() {
             setHasTriedSignin(true);
         }
     }, [auth, hasTriedSignin]);
+
+    useEffect(() => {
+        if (!auth.isAuthenticated) return;
+
+        const fetchCompanies = async () => {
+            const response = await authRequest(auth, `${API_BASE_URL}/access`);
+            if (response && response.ok) {
+                const data: Company[] = await response.json();
+                setCompanies(data);
+                if (data.length > 0) {
+                    setSelectedCompany(data[0]);
+                }
+            } else {
+                console.error("Failed to fetch companies");
+            }
+        };
+
+        fetchCompanies();
+    }, [auth.user, setSelectedCompany]);
 
     if (auth.isLoading) {
         return <div>Loading...</div>;
