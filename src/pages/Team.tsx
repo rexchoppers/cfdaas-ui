@@ -1,9 +1,10 @@
 import { useState } from "react";
 import {
+    Alert,
     Box,
     IconButton,
     Menu,
-    MenuItem,
+    MenuItem, Snackbar,
     SpeedDial,
     SpeedDialAction,
     SpeedDialIcon,
@@ -24,6 +25,7 @@ export default function TeamPage() {
     ]);
 
     const [menuAnchor, setMenuAnchor] = useState<{ [key: number]: HTMLElement | null }>({});
+    const [toast, setToast] = useState({ open: false, message: "", severity: "success" });
 
     const handleOpenMenu = (event: React.MouseEvent<HTMLElement>, id: number) => {
         setMenuAnchor({ ...menuAnchor, [id]: event.currentTarget });
@@ -71,8 +73,16 @@ export default function TeamPage() {
     // ✅ STATE FOR ADDING A USER
     const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
 
-    const handleAddMember = (newMember: { name: string; role: string; email: string }) => {
-        setTeam((prev) => [...prev, { id: Date.now(), ...newMember }]);
+    const handleAddMember = (member: { id: number; name: string; role: string; email: string }) => {
+        // setTeam((prev) => [...prev, newMember]);
+
+        // ✅ Show success toast
+        setToast({ open: true, message: "Member added successfully", severity: "success" });
+    };
+
+    // ✅ Close Toast Handler
+    const handleCloseToast = () => {
+        setToast({ open: false, message: "", severity: "success" });
     };
 
     // ✅ FAB MENU ACTIONS
@@ -129,6 +139,13 @@ export default function TeamPage() {
                 onClose={() => setIsAddMemberOpen(false)}
                 onSubmit={handleAddMember}
             />
+
+            {/* ✅ Success Snackbar */}
+            <Snackbar open={toast.open} autoHideDuration={4000} onClose={handleCloseToast}>
+                <Alert onClose={handleCloseToast} severity={toast.severity as any} sx={{ width: '100%' }}>
+                    {toast.message}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 }
