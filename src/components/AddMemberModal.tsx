@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import {
     Dialog,
     DialogActions,
@@ -10,14 +10,12 @@ import {
     MenuItem,
     CircularProgress
 } from "@mui/material";
-import {Formik, Form} from "formik";
+import { Formik, Form } from "formik";
 import * as Yup from "yup";
-import {useAuth} from "react-oidc-context";
+import { useAuth } from "react-oidc-context";
 
-// Define the type for access levels
 type AccessLevel = "owner" | "admin" | "editor" | "viewer";
 
-// Define the props for the modal
 interface AddMemberModalProps {
     open: boolean;
     onClose: () => void;
@@ -26,8 +24,6 @@ interface AddMemberModalProps {
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-
-// **Validation Schema using Yup**
 const validationSchema = Yup.object().shape({
     firstName: Yup.string().required("First name is required"),
     lastName: Yup.string().required("Last name is required"),
@@ -36,7 +32,7 @@ const validationSchema = Yup.object().shape({
     role: Yup.string().required("Role is required"),
 });
 
-export default function AddMemberModal({open, onClose, onSubmit}: AddMemberModalProps) {
+export default function AddMemberModal({ open, onClose, onSubmit }: AddMemberModalProps) {
     const auth = useAuth();
     const [accessLevels, setAccessLevels] = useState<AccessLevel[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
@@ -63,6 +59,29 @@ export default function AddMemberModal({open, onClose, onSubmit}: AddMemberModal
         }
     }, [open]);
 
+    const handleSubmit = async (values: { firstName: string; lastName: string; email: string; password: string; role: string }) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/new-endpoint`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${auth.user?.id_token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(values),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to submit data");
+            }
+
+            const result = await response.json();
+            onSubmit(result);
+            onClose();
+        } catch (error) {
+            console.error("Error submitting data:", error);
+        }
+    };
+
     return (
         // @ts-ignore
 
@@ -71,8 +90,8 @@ export default function AddMemberModal({open, onClose, onSubmit}: AddMemberModal
                 onClose();
             }
         }} fullWidth maxWidth="sm" disableEscapeKeyDown>
-            <DialogTitle sx={{pb: 2}}>Add New Member</DialogTitle>
-            <DialogContent sx={{overflow: "visible", pt: 1, pb: 3}}>
+            <DialogTitle sx={{ pb: 2 }}>Add New Member</DialogTitle>
+            <DialogContent sx={{ overflow: "visible", pt: 1, pb: 3 }}>
                 <Formik
                     initialValues={{
                         firstName: "",
@@ -82,15 +101,11 @@ export default function AddMemberModal({open, onClose, onSubmit}: AddMemberModal
                         role: "",
                     }}
                     validationSchema={validationSchema}
-                    onSubmit={(values) => {
-                        onSubmit(values);
-                        onClose();
-                    }}
+                    onSubmit={handleSubmit}
                 >
-                    {({values, handleChange, handleBlur, errors, touched}) => (
+                    {({ values, handleChange, handleBlur, errors, touched }) => (
                         <Form>
                             <Grid container spacing={2}>
-                                {/* First Name & Last Name */}
                                 <Grid item xs={12} md={6}>
                                     <TextField
                                         fullWidth
@@ -117,8 +132,6 @@ export default function AddMemberModal({open, onClose, onSubmit}: AddMemberModal
                                         size="small"
                                     />
                                 </Grid>
-
-                                {/* Email */}
                                 <Grid item xs={12}>
                                     <TextField
                                         fullWidth
@@ -133,8 +146,6 @@ export default function AddMemberModal({open, onClose, onSubmit}: AddMemberModal
                                         size="small"
                                     />
                                 </Grid>
-
-                                {/* Password */}
                                 <Grid item xs={12}>
                                     <TextField
                                         fullWidth
@@ -149,11 +160,9 @@ export default function AddMemberModal({open, onClose, onSubmit}: AddMemberModal
                                         size="small"
                                     />
                                 </Grid>
-
-                                {/* Role Dropdown (Fixed) */}
                                 <Grid item xs={12}>
                                     {loading ? (
-                                        <CircularProgress size={24}/>
+                                        <CircularProgress size={24} />
                                     ) : (
                                         <TextField
                                             select
@@ -177,8 +186,7 @@ export default function AddMemberModal({open, onClose, onSubmit}: AddMemberModal
                                     )}
                                 </Grid>
                             </Grid>
-
-                            <DialogActions sx={{pt: 2, px: 0, display: "flex", justifyContent: "flex-end", gap: 2}}>
+                            <DialogActions sx={{ pt: 2, px: 0, display: "flex", justifyContent: "flex-end", gap: 2 }}>
                                 <Button onClick={onClose} variant="contained" color="inherit">
                                     Cancel
                                 </Button>
@@ -186,8 +194,6 @@ export default function AddMemberModal({open, onClose, onSubmit}: AddMemberModal
                                     Add
                                 </Button>
                             </DialogActions>
-
-
                         </Form>
                     )}
                 </Formik>
