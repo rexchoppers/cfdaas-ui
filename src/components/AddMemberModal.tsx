@@ -41,7 +41,6 @@ export default function AddMemberModal({open, onClose, onSubmit}: AddMemberModal
     const [accessLevels, setAccessLevels] = useState<AccessLevel[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
-    // ✅ Fetch access levels when modal opens
     useEffect(() => {
         if (open) {
             setLoading(true);
@@ -54,18 +53,24 @@ export default function AddMemberModal({open, onClose, onSubmit}: AddMemberModal
             })
                 .then((res) => res.json())
                 .then((data) => {
-                    setAccessLevels(data); // Assume API returns ["owner", "admin", "editor", "viewer"]
+                    setAccessLevels(data);
                     setLoading(false);
                 })
                 .catch(() => {
-                    setAccessLevels([]); // Handle error gracefully
+                    setAccessLevels([]);
                     setLoading(false);
                 });
         }
     }, [open]);
 
     return (
-        <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+        // @ts-ignore
+
+        <Dialog open={open} onClose={(event, reason) => {
+            if (reason !== "backdropClick") {
+                onClose();
+            }
+        }} fullWidth maxWidth="sm" disableEscapeKeyDown>
             <DialogTitle sx={{pb: 2}}>Add New Member</DialogTitle>
             <DialogContent sx={{overflow: "visible", pt: 1, pb: 3}}>
                 <Formik
@@ -148,7 +153,7 @@ export default function AddMemberModal({open, onClose, onSubmit}: AddMemberModal
                                 {/* Role Dropdown (Fixed) */}
                                 <Grid item xs={12}>
                                     {loading ? (
-                                        <CircularProgress size={24} />
+                                        <CircularProgress size={24}/>
                                     ) : (
                                         <TextField
                                             select
@@ -173,7 +178,7 @@ export default function AddMemberModal({open, onClose, onSubmit}: AddMemberModal
                                 </Grid>
                             </Grid>
 
-                            <DialogActions sx={{  pt: 2, px: 0, display: "flex", justifyContent: "flex-end", gap: 2 }}>
+                            <DialogActions sx={{pt: 2, px: 0, display: "flex", justifyContent: "flex-end", gap: 2}}>
                                 <Button onClick={onClose} variant="contained" color="inherit">
                                     Cancel
                                 </Button>
