@@ -14,13 +14,13 @@ import {Formik, Form} from "formik";
 import * as Yup from "yup";
 import {useAuth} from "react-oidc-context";
 import {useCompany} from "../context/CompanyContext.tsx";
+import {Access} from "../types/Access.ts";
 
 type AccessLevel = "owner" | "admin" | "editor" | "viewer";
 
 interface AddMemberModalProps {
     open: boolean;
-    onClose: () => void;
-    onSubmit: (member: { firstName: string; lastName: string; email: string; password: string; level: string }) => void;
+    onClose: (access?: Access) => void;
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -33,7 +33,7 @@ const validationSchema = Yup.object().shape({
     level: Yup.string().required("Role is required"),
 });
 
-export default function AddMemberModal({open, onClose, onSubmit}: AddMemberModalProps) {
+export default function AddMemberModal({open, onClose}: AddMemberModalProps) {
     const auth = useAuth();
     const company = useCompany();
     const [accessLevels, setAccessLevels] = useState<AccessLevel[]>([]);
@@ -81,14 +81,13 @@ export default function AddMemberModal({open, onClose, onSubmit}: AddMemberModal
                 body: JSON.stringify(values),
             });
 
-            const result = await response.json();
-
             if (!response.ok) {
-                throw new Error(result.message);
+                throw new Error((await response.json()).message);
             }
 
-            onSubmit(result);
-            onClose();
+            const result: Access = await response.json();
+
+            onClose(result);
         } catch (error) {
             console.error("Error submitting data:", error);
             // @ts-ignore
@@ -210,7 +209,7 @@ export default function AddMemberModal({open, onClose, onSubmit}: AddMemberModal
                                 </Grid>
                             </Grid>
                             <DialogActions sx={{pt: 2, px: 0, display: "flex", justifyContent: "flex-end", gap: 2}}>
-                                <Button onClick={onClose} variant="contained" color="inherit">
+                                <Button onClick={() => onClose()} variant="contained" color="inherit">
                                     Cancel
                                 </Button>
                                 <Button type="submit" variant="contained">
