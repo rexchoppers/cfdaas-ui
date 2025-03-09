@@ -8,7 +8,7 @@ import {
     Button,
     TextField,
     MenuItem,
-    CircularProgress
+    CircularProgress, Alert
 } from "@mui/material";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
@@ -38,10 +38,13 @@ export default function AddMemberModal({ open, onClose, onSubmit }: AddMemberMod
     const company = useCompany();
     const [accessLevels, setAccessLevels] = useState<AccessLevel[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
+    const [apiError, setApiError] = useState<string | null>(null);
 
     useEffect(() => {
         if (open) {
             setLoading(true);
+            setApiError(null);
+
             fetch(`${API_BASE_URL}/access/level`, {
                 method: "GET",
                 headers: {
@@ -81,6 +84,8 @@ export default function AddMemberModal({ open, onClose, onSubmit }: AddMemberMod
             onClose();
         } catch (error) {
             console.error("Error submitting data:", error);
+            // @ts-ignore
+            setApiError(error.message || "An unexpected error occurred");
         }
     };
 
@@ -94,6 +99,13 @@ export default function AddMemberModal({ open, onClose, onSubmit }: AddMemberMod
         }} fullWidth maxWidth="sm" disableEscapeKeyDown>
             <DialogTitle sx={{ pb: 2 }}>Add New Member</DialogTitle>
             <DialogContent sx={{ overflow: "visible", pt: 1, pb: 3 }}>
+                {/* ✅ Error Message Display */}
+                {apiError && (
+                    <Alert severity="error" sx={{ mb: 2 }}>
+                        {apiError}
+                    </Alert>
+                )}
+
                 <Formik
                     initialValues={{
                         firstName: "",
