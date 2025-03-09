@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 import {
     Dialog,
     DialogActions,
@@ -10,9 +10,9 @@ import {
     MenuItem,
     CircularProgress, Alert
 } from "@mui/material";
-import { Formik, Form } from "formik";
+import {Formik, Form} from "formik";
 import * as Yup from "yup";
-import { useAuth } from "react-oidc-context";
+import {useAuth} from "react-oidc-context";
 import {useCompany} from "../context/CompanyContext.tsx";
 
 type AccessLevel = "owner" | "admin" | "editor" | "viewer";
@@ -33,7 +33,7 @@ const validationSchema = Yup.object().shape({
     level: Yup.string().required("Role is required"),
 });
 
-export default function AddMemberModal({ open, onClose, onSubmit }: AddMemberModalProps) {
+export default function AddMemberModal({open, onClose, onSubmit}: AddMemberModalProps) {
     const auth = useAuth();
     const company = useCompany();
     const [accessLevels, setAccessLevels] = useState<AccessLevel[]>([]);
@@ -64,7 +64,13 @@ export default function AddMemberModal({ open, onClose, onSubmit }: AddMemberMod
         }
     }, [open]);
 
-    const handleSubmit = async (values: { firstName: string; lastName: string; email: string; password: string; level: string }) => {
+    const handleSubmit = async (values: {
+        firstName: string;
+        lastName: string;
+        email: string;
+        password: string;
+        level: string
+    }) => {
         try {
             const response = await fetch(`${API_BASE_URL}/company/${company.selectedCompany.id}/team`, {
                 method: "POST",
@@ -75,15 +81,18 @@ export default function AddMemberModal({ open, onClose, onSubmit }: AddMemberMod
                 body: JSON.stringify(values),
             });
 
+            const result = await response.json();
+
             if (!response.ok) {
-                throw new Error("Failed to submit data");
+                throw new Error(result.message);
             }
 
-            const result = await response.json();
             onSubmit(result);
             onClose();
         } catch (error) {
             console.error("Error submitting data:", error);
+            // @ts-ignore
+            console.error("Error submitting data message:", error.message);
             // @ts-ignore
             setApiError(error.message || "An unexpected error occurred");
         }
@@ -97,11 +106,11 @@ export default function AddMemberModal({ open, onClose, onSubmit }: AddMemberMod
                 onClose();
             }
         }} fullWidth maxWidth="sm" disableEscapeKeyDown>
-            <DialogTitle sx={{ pb: 2 }}>Add New Member</DialogTitle>
-            <DialogContent sx={{ overflow: "visible", pt: 1, pb: 3 }}>
+            <DialogTitle sx={{pb: 2}}>Add New Member</DialogTitle>
+            <DialogContent sx={{overflow: "visible", pt: 1, pb: 3}}>
                 {/* ✅ Error Message Display */}
                 {apiError && (
-                    <Alert severity="error" sx={{ mb: 2 }}>
+                    <Alert severity="error" sx={{mb: 2}}>
                         {apiError}
                     </Alert>
                 )}
@@ -117,7 +126,7 @@ export default function AddMemberModal({ open, onClose, onSubmit }: AddMemberMod
                     validationSchema={validationSchema}
                     onSubmit={handleSubmit}
                 >
-                    {({ values, handleChange, handleBlur, errors, touched }) => (
+                    {({values, handleChange, handleBlur, errors, touched}) => (
                         <Form>
                             <Grid container spacing={2}>
                                 <Grid item xs={12} md={6}>
@@ -176,7 +185,7 @@ export default function AddMemberModal({ open, onClose, onSubmit }: AddMemberMod
                                 </Grid>
                                 <Grid item xs={12}>
                                     {loading ? (
-                                        <CircularProgress size={24} />
+                                        <CircularProgress size={24}/>
                                     ) : (
                                         <TextField
                                             select
@@ -200,7 +209,7 @@ export default function AddMemberModal({ open, onClose, onSubmit }: AddMemberMod
                                     )}
                                 </Grid>
                             </Grid>
-                            <DialogActions sx={{ pt: 2, px: 0, display: "flex", justifyContent: "flex-end", gap: 2 }}>
+                            <DialogActions sx={{pt: 2, px: 0, display: "flex", justifyContent: "flex-end", gap: 2}}>
                                 <Button onClick={onClose} variant="contained" color="inherit">
                                     Cancel
                                 </Button>
