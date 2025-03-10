@@ -15,14 +15,11 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
-import AddMemberModal from "../components/AddMemberModal"; // Import the new modal component
+import AddMemberModal from "../components/AddMemberModal";
+import {Access} from "../types/Access.ts"; // Import the new modal component
 
 export default function TeamPage() {
-    const [team, setTeam] = useState([
-        { id: 1, name: "Alice Johnson", role: "Admin", email: "alice@example.com" },
-        { id: 2, name: "Bob Smith", role: "Editor", email: "bob@example.com" },
-        { id: 3, name: "Charlie Davis", role: "Viewer", email: "charlie@example.com" }
-    ]);
+    const [team, setTeam] = useState([]);
 
     const [menuAnchor, setMenuAnchor] = useState<{ [key: number]: HTMLElement | null }>({});
     const [toast, setToast] = useState({ open: false, message: "", severity: "success" });
@@ -73,14 +70,12 @@ export default function TeamPage() {
     // ✅ STATE FOR ADDING A USER
     const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
 
-    const handleAddMember = (member: { id: number; name: string; role: string; email: string }) => {
+    const handleAddMember = (access: Access) => {
         // setTeam((prev) => [...prev, newMember]);
 
-        // ✅ Show success toast
         setToast({ open: true, message: "Member added successfully", severity: "success" });
     };
 
-    // ✅ Close Toast Handler
     const handleCloseToast = () => {
         setToast({ open: false, message: "", severity: "success" });
     };
@@ -137,7 +132,6 @@ export default function TeamPage() {
             <AddMemberModal
                 open={isAddMemberOpen}
                 onClose={() => setIsAddMemberOpen(false)}
-                onSubmit={handleAddMember}
             />
 
             {/* ✅ Success Snackbar */}
