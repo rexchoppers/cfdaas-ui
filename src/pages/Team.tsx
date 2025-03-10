@@ -4,13 +4,14 @@ import {
     Box,
     IconButton,
     Menu,
-    MenuItem, Snackbar,
+    MenuItem,
+    Snackbar,
     SpeedDial,
     SpeedDialAction,
     SpeedDialIcon,
-    Typography
+    Typography,
 } from "@mui/material";
-import { DataGrid, GridColDef, GridRowEditStopReasons } from "@mui/x-data-grid";
+import {DataGrid, GridColDef} from "@mui/x-data-grid";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -20,7 +21,8 @@ import {Access} from "../types/Access.ts";
 import {useAuth} from "react-oidc-context";
 import {useCompany} from "../context/CompanyContext.tsx";
 import {authRequest} from "../utils/AuthenticatedRequestUtil.ts";
-import {User} from "../types/User.ts"; // Import the new modal component
+import {User} from "../types/User.ts";
+import DeleteMemberConfirmation from "../components/DeleteMemberConfirmation.tsx";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -37,14 +39,17 @@ export default function TeamPage() {
         email: string;
     }[]>([]);
     const [menuAnchor, setMenuAnchor] = useState<{ [key: number]: HTMLElement | null }>({});
-    const [toast, setToast] = useState({ open: false, message: "", severity: "success" });
+    const [toast, setToast] = useState({open: false, message: "", severity: "success"});
     const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        console.log(company.selectedCompany);
+    const [deleteMemberConfirmationDialogOpen, setDeleteMemberConfirmationDialogOpen] = useState(false);
+    const [deleteMemberTarget, setDeleteMemberTarget] = useState<{ id: string, name: string } | null>(null);
 
+
+    // ✅ FETCH TEAM MEMBERS
+    const fetchTeamData = () => {
         if (!auth.isAuthenticated || !company.selectedCompany?.id) return;
 
         setLoading(true);
@@ -75,26 +80,55 @@ export default function TeamPage() {
                 setError(err.message);
                 setLoading(false);
             });
+    };
+
+    useEffect(() => {
+        fetchTeamData();
     }, [auth.user, company.selectedCompany]);
 
+    // ✅ DELETE HANDLER WITH CONFIRMATION
+    const handleDeleteMemberConfirm = () => {
+        if (!deleteMemberTarget) return;
 
+        authRequest(auth, `${API_BASE_URL}/company/${company.selectedCompany.id}/team/${deleteMemberTarget.id}`, "DELETE")
+            .then((res) => {
+                if (!res || !res.ok) throw new Error("Failed to delete member");
+
+                setToast({open: true, message: "Member deleted successfully", severity: "success"});
+                fetchTeamData();
+            })
+            .catch(() => {
+                setToast({open: true, message: "Failed to delete member", severity: "error"});
+            })
+            .finally(() => {
+                setDeleteMemberConfirmationDialogOpen(false);
+                setDeleteMemberTarget(null);
+            });
+    };
+
+    const handleOpenDeleteMemberDialog = (id: string, name: string) => {
+        console.log("Deleting", id, name);
+        setDeleteMemberTarget({id, name});
+        setDeleteMemberConfirmationDialogOpen(true);
+    };
+
+    const handleCloseDeleteMemberDialog = () => {
+        setDeleteMemberConfirmationDialogOpen(false);
+        setDeleteMemberTarget(null);
+    };
 
     const handleOpenMenu = (event: React.MouseEvent<HTMLElement>, id: number) => {
-        setMenuAnchor({ ...menuAnchor, [id]: event.currentTarget });
+        setMenuAnchor({...menuAnchor, [id]: event.currentTarget});
     };
 
     const handleCloseMenu = (id: number) => {
-        setMenuAnchor({ ...menuAnchor, [id]: null });
-    };
-
-    const handleDelete = (id: number) => {
-        setTeam((prev) => prev.filter((member) => member.id !== id));
+        setMenuAnchor({...menuAnchor, [id]: null});
     };
 
     const columns: GridColDef[] = [
-        { field: "name", headerName: "Name", flex: 1, editable: true },
-        { field: "role", headerName: "Role", flex: 1, editable: true },
-        { field: "email", headerName: "Email", flex: 1 },
+        {field: "name", headerName: "Name", flex: 1, editable: false},
+        {field: "role", headerName: "Role", flex: 1, editable: false},
+        {field: "email", headerName: "Email", flex: 1},
         {
             field: "actions",
             headerName: "Actions",
@@ -102,7 +136,7 @@ export default function TeamPage() {
             renderCell: (params) => (
                 <>
                     <IconButton onClick={(e) => handleOpenMenu(e, params.id as number)}>
-                        <MoreVertIcon />
+                        <MoreVertIcon/>
                     </IconButton>
                     <Menu
                         anchorEl={menuAnchor[params.id as number]}
@@ -110,10 +144,11 @@ export default function TeamPage() {
                         onClose={() => handleCloseMenu(params.id as number)}
                     >
                         <MenuItem onClick={() => alert(`Editing ${params.row.name}`)}>
-                            <EditIcon sx={{ mr: 1 }} /> Edit
+                            <EditIcon sx={{mr: 1}}/> Edit
                         </MenuItem>
-                        <MenuItem onClick={() => handleDelete(params.id as number)} sx={{ color: "red" }}>
-                            <DeleteIcon sx={{ mr: 1 }} /> Delete
+                        <MenuItem onClick={() => handleOpenDeleteMemberDialog(params.id as string, params.row.name)}
+                                  sx={{color: "red"}}>
+                            <DeleteIcon sx={{mr: 1}}/> Delete
                         </MenuItem>
                     </Menu>
                 </>
@@ -122,25 +157,17 @@ export default function TeamPage() {
         }
     ];
 
-    // ✅ STATE FOR ADDING A USER
-
-    const handleAddMember = (access: Access) => {
-        // setTeam((prev) => [...prev, newMember]);
-
-        setToast({ open: true, message: "Member added successfully", severity: "success" });
+    const handleAddMember = () => {
+        setToast({open: true, message: "Member added successfully", severity: "success"});
+        fetchTeamData();
     };
 
     const handleCloseToast = () => {
-        setToast({ open: false, message: "", severity: "success" });
+        setToast({open: false, message: "", severity: "success"});
     };
 
-    // ✅ FAB MENU ACTIONS
-    const actions = [
-        { icon: <AddIcon />, name: "Add User", onClick: () => setIsAddMemberOpen(true) },
-    ];
-
     return (
-        <Box sx={{ p: 3, position: "relative" }}>
+        <Box sx={{p: 3, position: "relative"}}>
             {/* Header */}
             <Typography variant="h4" gutterBottom>
                 Team Management
@@ -151,46 +178,43 @@ export default function TeamPage() {
                 rows={team}
                 columns={columns}
                 autoHeight
-                // disableSelectionOnClick
-                processRowUpdate={(params) =>
-                    setTeam((prev) =>
-                        prev.map((member) =>
-                            member.id === params.id ? { ...member, [params.field]: params.value } : member
-                        )
-                    )
-                }
-                onRowEditStop={(params, event) => {
-                    if (params.reason === GridRowEditStopReasons.rowFocusOut) {
-                        event.defaultMuiPrevented = true;
-                    }
-                }}
+                loading={loading}
             />
 
             {/* Floating Action Button (SpeedDial) */}
             <SpeedDial
                 ariaLabel="Team Actions"
-                sx={{ position: "fixed", bottom: 16, right: 16 }}
-                icon={<SpeedDialIcon />}
+                sx={{position: "fixed", bottom: 16, right: 16}}
+                icon={<SpeedDialIcon/>}
             >
-                {actions.map((action) => (
-                    <SpeedDialAction
-                        key={action.name}
-                        icon={action.icon}
-                        tooltipTitle={action.name}
-                        onClick={action.onClick}
-                    />
-                ))}
+                <SpeedDialAction
+                    key="Add User"
+                    icon={<AddIcon/>}
+                    tooltipTitle="Add User"
+                    onClick={() => setIsAddMemberOpen(true)}
+                />
             </SpeedDial>
 
-            {/* Add Member Modal (Now a Separate Component) */}
+            {/* Add Member Modal */}
             <AddMemberModal
                 open={isAddMemberOpen}
-                onClose={() => setIsAddMemberOpen(false)}
+                onClose={() => {
+                    setIsAddMemberOpen(false);
+                    handleAddMember();
+                }}
             />
 
-            {/* ✅ Success Snackbar */}
+            {/* ✅ Delete Confirmation Dialog */}
+            <DeleteMemberConfirmation
+                open={deleteMemberConfirmationDialogOpen}
+                onClose={handleCloseDeleteMemberDialog}
+                onConfirm={handleDeleteMemberConfirm}
+                name={deleteMemberTarget?.name || ""}
+            />
+
+            {/* ✅ Success/Error Snackbar */}
             <Snackbar open={toast.open} autoHideDuration={4000} onClose={handleCloseToast}>
-                <Alert onClose={handleCloseToast} severity={toast.severity as any} sx={{ width: '100%' }}>
+                <Alert onClose={handleCloseToast} severity={toast.severity as any} sx={{width: '100%'}}>
                     {toast.message}
                 </Alert>
             </Snackbar>
