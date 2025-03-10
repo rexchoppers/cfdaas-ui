@@ -35,7 +35,8 @@ export default function TeamPage() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!auth.isAuthenticated || !company.selectedCompany) return;
+        console.log(company.selectedCompany);
+        if (!auth.isAuthenticated || !company.selectedCompany?.id) return;
 
         setLoading(true);
         setError(null);
@@ -52,14 +53,7 @@ export default function TeamPage() {
                 return res.json();
             })
             .then((data: Access[]) => {
-                const formattedData = data.map((access) => ({
-                    id: access.user.id, // Use user ID from access object
-                    name: `${access.user.firstName} ${access.user.lastName}`,
-                    role: access.level,
-                    email: access.user.email,
-                }));
-
-                setTeam(formattedData);
+                setTeam(data);
                 setLoading(false);
             })
             .catch((err) => {
