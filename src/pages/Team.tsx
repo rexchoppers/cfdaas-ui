@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import {
     Alert,
     Box,
@@ -16,13 +16,57 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
 import AddMemberModal from "../components/AddMemberModal";
-import {Access} from "../types/Access.ts"; // Import the new modal component
+import {Access} from "../types/Access.ts";
+import {useAuth} from "react-oidc-context";
+import {useCompany} from "../context/CompanyContext.tsx"; // Import the new modal component
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function TeamPage() {
-    const [team, setTeam] = useState([]);
+    const auth = useAuth();
+    const company = useCompany();
 
+    // States
+    const [team, setTeam] = useState([]);
     const [menuAnchor, setMenuAnchor] = useState<{ [key: number]: HTMLElement | null }>({});
     const [toast, setToast] = useState({ open: false, message: "", severity: "success" });
+    const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!auth.isAuthenticated || !company.selectedCompany) return;
+
+        setLoading(true);
+        setError(null);
+
+        fetch(`${API_BASE_URL}/company/${company.selectedCompany.id}/team`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${auth.user?.id_token}`,
+                "Content-Type": "application/json",
+            },
+        })
+            .then((res) => {
+                if (!res.ok) throw new Error("Failed to load team data");
+                return res.json();
+            })
+            .then((data: Access[]) => {
+                const formattedData = data.map((access) => ({
+                    id: access.user.id, // Use user ID from access object
+                    name: `${access.user.firstName} ${access.user.lastName}`,
+                    role: access.level,
+                    email: access.user.email,
+                }));
+
+                setTeam(formattedData);
+                setLoading(false);
+            })
+            .catch((err) => {
+                setError(err.message);
+                setLoading(false);
+            });
+    }, [auth.user, company.selectedCompany]);
 
     const handleOpenMenu = (event: React.MouseEvent<HTMLElement>, id: number) => {
         setMenuAnchor({ ...menuAnchor, [id]: event.currentTarget });
@@ -68,7 +112,6 @@ export default function TeamPage() {
     ];
 
     // ✅ STATE FOR ADDING A USER
-    const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
 
     const handleAddMember = (access: Access) => {
         // setTeam((prev) => [...prev, newMember]);
