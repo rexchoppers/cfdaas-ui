@@ -1,4 +1,4 @@
-import { Dialog, DialogActions, DialogContent, DialogTitle, Button, Typography, Box } from "@mui/material";
+import { Dialog, DialogActions, DialogContent, DialogTitle, Button, Typography } from "@mui/material";
 
 interface DeleteMemberConfirmationProps {
     open: boolean;

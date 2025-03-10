@@ -146,7 +146,7 @@ export default function TeamPage() {
                         <MenuItem onClick={() => alert(`Editing ${params.row.name}`)}>
                             <EditIcon sx={{mr: 1}}/> Edit
                         </MenuItem>
-                        <MenuItem onClick={() => handleOpenDeleteMemberDialog(params.id as string, params.row.name)}
+                        <MenuItem onClick={() => handleOpenDeleteMemberDialog(params.row.userId as string, params.row.name)}
                                   sx={{color: "red"}}>
                             <DeleteIcon sx={{mr: 1}}/> Delete
                         </MenuItem>
