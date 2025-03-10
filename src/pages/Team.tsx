@@ -18,7 +18,8 @@ import AddIcon from "@mui/icons-material/Add";
 import AddMemberModal from "../components/AddMemberModal";
 import {Access} from "../types/Access.ts";
 import {useAuth} from "react-oidc-context";
-import {useCompany} from "../context/CompanyContext.tsx"; // Import the new modal component
+import {useCompany} from "../context/CompanyContext.tsx";
+import {authRequest} from "../utils/AuthenticatedRequestUtil.ts"; // Import the new modal component
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -27,7 +28,7 @@ export default function TeamPage() {
     const company = useCompany();
 
     // States
-    const [team, setTeam] = useState([]);
+    const [team, setTeam] = useState<Access[]>([]);
     const [menuAnchor, setMenuAnchor] = useState<{ [key: number]: HTMLElement | null }>({});
     const [toast, setToast] = useState({ open: false, message: "", severity: "success" });
     const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
@@ -36,20 +37,16 @@ export default function TeamPage() {
 
     useEffect(() => {
         console.log(company.selectedCompany);
+
         if (!auth.isAuthenticated || !company.selectedCompany?.id) return;
 
         setLoading(true);
         setError(null);
 
-        fetch(`${API_BASE_URL}/company/${company.selectedCompany.id}/team`, {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${auth.user?.id_token}`,
-                "Content-Type": "application/json",
-            },
-        })
+        authRequest(auth, `${API_BASE_URL}/company/${company.selectedCompany.id}/team`)
             .then((res) => {
-                if (!res.ok) throw new Error("Failed to load team data");
+                if (!res) throw new Error("Failed to fetch team data");
+                if (!res.ok) throw new Error(`Failed to load team data: ${res.statusText}`);
                 return res.json();
             })
             .then((data: Access[]) => {
@@ -61,6 +58,8 @@ export default function TeamPage() {
                 setLoading(false);
             });
     }, [auth.user, company.selectedCompany]);
+
+
 
     const handleOpenMenu = (event: React.MouseEvent<HTMLElement>, id: number) => {
         setMenuAnchor({ ...menuAnchor, [id]: event.currentTarget });
