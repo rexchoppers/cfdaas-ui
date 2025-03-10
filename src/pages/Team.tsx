@@ -19,7 +19,8 @@ import AddMemberModal from "../components/AddMemberModal";
 import {Access} from "../types/Access.ts";
 import {useAuth} from "react-oidc-context";
 import {useCompany} from "../context/CompanyContext.tsx";
-import {authRequest} from "../utils/AuthenticatedRequestUtil.ts"; // Import the new modal component
+import {authRequest} from "../utils/AuthenticatedRequestUtil.ts";
+import {User} from "../types/User.ts"; // Import the new modal component
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -28,7 +29,13 @@ export default function TeamPage() {
     const company = useCompany();
 
     // States
-    const [team, setTeam] = useState<Access[]>([]);
+    const [team, setTeam] = useState<{
+        id: string;
+        userId: string;
+        name: string;
+        role: string;
+        email: string;
+    }[]>([]);
     const [menuAnchor, setMenuAnchor] = useState<{ [key: number]: HTMLElement | null }>({});
     const [toast, setToast] = useState({ open: false, message: "", severity: "success" });
     const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
@@ -50,7 +57,18 @@ export default function TeamPage() {
                 return res.json();
             })
             .then((data: Access[]) => {
-                setTeam(data);
+                const formattedData = data.map((access) => {
+                    const user = access.user as User;
+                    return {
+                        id: access.id,
+                        userId: user.id,
+                        name: `${user.firstName} ${user.lastName}`,
+                        role: access.level,
+                        email: user.email,
+                    };
+                });
+
+                setTeam(formattedData);
                 setLoading(false);
             })
             .catch((err) => {
