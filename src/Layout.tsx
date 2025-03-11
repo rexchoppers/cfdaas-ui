@@ -75,7 +75,7 @@ export default function Layout() {
             if (response && response.ok) {
                 const data: Access[] = await response.json();
 
-                const companies = R.map(data, (access) => access.company);
+                const companies = R.map(data, (access) => access.company) as Company[];
 
                 setCompanies(companies);
                 if (data.length > 0) {
