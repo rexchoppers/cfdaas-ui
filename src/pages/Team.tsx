@@ -164,8 +164,8 @@ export default function TeamPage() {
         }
     ];
 
-    const handleAddMember = () => {
-        setToast({open: true, message: "Member added successfully", severity: "success"});
+    const handleAddMember = (success: boolean) => {
+        if (success) setToast({open: true, message: "Member added successfully", severity: "success"});
         fetchTeamData();
     };
 
@@ -205,9 +205,12 @@ export default function TeamPage() {
             {/* Add Member Modal */}
             <AddMemberModal
                 open={isAddMemberOpen}
-                onClose={() => {
+                onClose={(access) => {
+                    console.log("Access created", access);
+
                     setIsAddMemberOpen(false);
-                    handleAddMember();
+
+                    handleAddMember(access !== undefined);
                 }}
             />
 

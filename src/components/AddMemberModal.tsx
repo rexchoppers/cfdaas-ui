@@ -89,9 +89,6 @@ export default function AddMemberModal({open, onClose}: AddMemberModalProps) {
 
             onClose(result);
         } catch (error) {
-            console.error("Error submitting data:", error);
-            // @ts-ignore
-            console.error("Error submitting data message:", error.message);
             // @ts-ignore
             setApiError(error.message || "An unexpected error occurred");
         }
