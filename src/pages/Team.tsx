@@ -87,24 +87,31 @@ export default function TeamPage() {
     }, [auth.user, company.selectedCompany]);
 
     // ✅ DELETE HANDLER WITH CONFIRMATION
-    const handleDeleteMemberConfirm = () => {
+    const handleDeleteMemberConfirm = async () => {
         if (!deleteMemberTarget) return;
 
-        authRequest(auth, `${API_BASE_URL}/company/${company.selectedCompany.id}/team/${deleteMemberTarget.id}`, "DELETE")
-            .then((res) => {
-                if (!res || !res.ok) throw new Error("Failed to delete member");
+        try {
+            const res = await authRequest(auth, `${API_BASE_URL}/company/${company.selectedCompany.id}/team/${deleteMemberTarget.id}`, "DELETE");
 
-                setToast({open: true, message: "Member deleted successfully", severity: "success"});
-                fetchTeamData();
-            })
-            .catch(() => {
-                setToast({open: true, message: "Failed to delete member", severity: "error"});
-            })
-            .finally(() => {
-                setDeleteMemberConfirmationDialogOpen(false);
-                setDeleteMemberTarget(null);
-            });
+            if (!res) {
+                throw new Error("No response from server");
+            }
+
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => null); // Handle cases where response is not JSON
+                throw new Error(errorData?.message || `Failed to delete member (Status: ${res.status})`);
+            }
+
+            setToast({ open: true, message: "Member deleted successfully", severity: "success" });
+            fetchTeamData();
+        } catch (err: any) {
+            setToast({ open: true, message: err.message, severity: "error" });
+        } finally {
+            setDeleteMemberConfirmationDialogOpen(false);
+            setDeleteMemberTarget(null);
+        }
     };
+
 
     const handleOpenDeleteMemberDialog = (id: string, name: string) => {
         console.log("Deleting", id, name);
