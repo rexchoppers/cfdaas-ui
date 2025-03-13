@@ -103,10 +103,10 @@ export default function TeamPage() {
                 throw new Error(errorData?.message || `Failed to delete member (Status: ${res.status})`);
             }
 
-            setToast({ open: true, message: "Member deleted successfully", severity: "success" });
+            setToast({open: true, message: "Member deleted successfully", severity: "success"});
             fetchTeamData();
         } catch (err: any) {
-            setToast({ open: true, message: err.message, severity: "error" });
+            setToast({open: true, message: err.message, severity: "error"});
         } finally {
             setDeleteMemberConfirmationDialogOpen(false);
             setDeleteMemberTarget(null);
@@ -154,8 +154,9 @@ export default function TeamPage() {
                         <MenuItem onClick={() => alert(`Editing ${params.row.name}`)}>
                             <EditIcon sx={{mr: 1}}/> Edit
                         </MenuItem>
-                        <MenuItem onClick={() => handleOpenDeleteMemberDialog(params.row.userId as string, params.row.name)}
-                                  sx={{color: "red"}}>
+                        <MenuItem
+                            onClick={() => handleOpenDeleteMemberDialog(params.row.userId as string, params.row.name)}
+                            sx={{color: "red"}}>
                             <DeleteIcon sx={{mr: 1}}/> Delete
                         </MenuItem>
                     </Menu>
