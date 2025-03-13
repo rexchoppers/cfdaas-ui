@@ -23,6 +23,7 @@ import {useCompany} from "../context/CompanyContext.tsx";
 import {authRequest} from "../utils/AuthenticatedRequestUtil.ts";
 import {User} from "../types/User.ts";
 import DeleteMemberConfirmation from "../components/DeleteMemberConfirmation.tsx";
+import * as R from "remeda";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -68,7 +69,7 @@ export default function TeamPage() {
                         id: access.id,
                         userId: user.id,
                         name: `${user.firstName} ${user.lastName}`,
-                        role: access.level,
+                        role: R.capitalize(access.level),
                         email: user.email,
                     };
                 });
