@@ -48,6 +48,9 @@ export default function TeamPage() {
     const [deleteMemberConfirmationDialogOpen, setDeleteMemberConfirmationDialogOpen] = useState(false);
     const [deleteMemberTarget, setDeleteMemberTarget] = useState<{ id: string, name: string } | null>(null);
 
+    const [isEditMemberOpen, setIsEditMemberOpen] = useState(false);
+    const [editMemberTarget, setEditMemberTarget] = useState<Access | null>(null);
+
 
     // ✅ FETCH TEAM MEMBERS
     const fetchTeamData = () => {
@@ -113,6 +116,10 @@ export default function TeamPage() {
         }
     };
 
+    const handleEditMember = (member: Access) => {
+        setEditMemberTarget(member);
+        setIsEditMemberOpen(true);
+    };
 
     const handleOpenDeleteMemberDialog = (id: string, name: string) => {
         console.log("Deleting", id, name);
@@ -151,7 +158,7 @@ export default function TeamPage() {
                         open={Boolean(menuAnchor[params.id as number])}
                         onClose={() => handleCloseMenu(params.id as number)}
                     >
-                        <MenuItem onClick={() => alert(`Editing ${params.row.name}`)}>
+                        <MenuItem onClick={() => handleEditMember(params.row)}>
                             <EditIcon sx={{mr: 1}}/> Edit
                         </MenuItem>
                         <MenuItem
