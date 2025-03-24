@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {
     Alert,
     Box,
@@ -52,6 +52,8 @@ export default function TeamPage() {
     const [isEditMemberOpen, setIsEditMemberOpen] = useState(false);
     const [editMemberTarget, setEditMemberTarget] = useState<{ userId: string} | null>(null);
 
+    const hasFetchedRef = useRef(false);
+
 
     // ✅ FETCH TEAM MEMBERS
     const fetchTeamData = () => {
@@ -88,8 +90,14 @@ export default function TeamPage() {
     };
 
     useEffect(() => {
+        if (!auth.isAuthenticated || !company.selectedCompany?.id) return;
+
+        if (hasFetchedRef.current) return;
+        hasFetchedRef.current = true;
+
         fetchTeamData();
-    }, [auth.user, company.selectedCompany]);
+    }, [auth.isAuthenticated, company.selectedCompany?.id]);
+
 
     // ✅ DELETE HANDLER WITH CONFIRMATION
     const handleDeleteMemberConfirm = async () => {
