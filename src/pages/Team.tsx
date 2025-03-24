@@ -24,6 +24,7 @@ import {authRequest} from "../utils/AuthenticatedRequestUtil.ts";
 import {User} from "../types/User.ts";
 import DeleteMemberConfirmation from "../components/DeleteMemberConfirmation.tsx";
 import * as R from "remeda";
+import EditMemberModal from "../components/EditMemberModal.tsx";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -49,7 +50,7 @@ export default function TeamPage() {
     const [deleteMemberTarget, setDeleteMemberTarget] = useState<{ id: string, name: string } | null>(null);
 
     const [isEditMemberOpen, setIsEditMemberOpen] = useState(false);
-    const [editMemberTarget, setEditMemberTarget] = useState<Access | null>(null);
+    const [editMemberTarget, setEditMemberTarget] = useState<{ userId: string} | null>(null);
 
 
     // ✅ FETCH TEAM MEMBERS
@@ -116,13 +117,13 @@ export default function TeamPage() {
         }
     };
 
-    const handleEditMember = (member: Access) => {
+    const handleEditMember = (member: { userId: string }) => {
         setEditMemberTarget(member);
+        console.log(member);
         setIsEditMemberOpen(true);
     };
 
     const handleOpenDeleteMemberDialog = (id: string, name: string) => {
-        console.log("Deleting", id, name);
         setDeleteMemberTarget({id, name});
         setDeleteMemberConfirmationDialogOpen(true);
     };
@@ -222,6 +223,23 @@ export default function TeamPage() {
                     handleAddMember(access !== undefined);
                 }}
             />
+
+            {/* Edit Member Modal */}
+            <EditMemberModal
+                open={isEditMemberOpen}
+                onClose={(access) => {
+                    console.log("Access updated", access);
+
+                    setIsEditMemberOpen(false);
+
+                    if (access) {
+                        setToast({open: true, message: "Member updated successfully", severity: "success"});
+                        fetchTeamData();
+                    }
+                }}
+                memberId={editMemberTarget?.userId}
+            />
+
 
             {/* ✅ Delete Confirmation Dialog */}
             <DeleteMemberConfirmation

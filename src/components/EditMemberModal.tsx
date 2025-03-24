@@ -1,29 +1,22 @@
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 import {
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    Grid,
-    Button,
-    TextField,
-    MenuItem,
-    CircularProgress,
-    Alert
+    Dialog, DialogActions, DialogContent, DialogTitle,
+    Grid, Button, TextField, MenuItem, CircularProgress, Alert
 } from "@mui/material";
-import { Formik, Form } from "formik";
+import {Formik, Form} from "formik";
 import * as Yup from "yup";
-import { useAuth } from "react-oidc-context";
-import { useCompany } from "../context/CompanyContext.tsx";
-import { Access } from "../types/Access.ts";
+import {useAuth} from "react-oidc-context";
+import {useCompany} from "../context/CompanyContext.tsx";
+import {Access} from "../types/Access.ts";
 import {User} from "../types/User.ts";
+import {authRequest} from "../utils/AuthenticatedRequestUtil.ts";
 
 type AccessLevel = "owner" | "admin" | "editor" | "viewer";
 
 interface EditMemberModalProps {
     open: boolean;
     onClose: (updatedAccess?: Access) => void;
-    member: Access;
+    memberId: string;
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -35,36 +28,43 @@ const validationSchema = Yup.object().shape({
     level: Yup.string().required("Role is required"),
 });
 
-export default function EditMemberModal({ open, onClose, member }: EditMemberModalProps) {
+export default function EditMemberModal({open, onClose, memberId}: EditMemberModalProps) {
     const auth = useAuth();
     const company = useCompany();
+
+    const [member, setMember] = useState<Access | null>(null);
     const [accessLevels, setAccessLevels] = useState<AccessLevel[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [apiError, setApiError] = useState<string | null>(null);
 
+    // Fetch roles + member details
     useEffect(() => {
-        if (open) {
-            setLoading(true);
-            setApiError(null);
+        console.log("MEMBER ID", memberId);
 
-            fetch(`${API_BASE_URL}/access/level`, {
-                method: "GET",
-                headers: {
-                    "Authorization": `Bearer ${auth.user?.id_token}`,
-                    "Content-Type": "application/json",
-                },
+        if (!open || !memberId) return;
+
+        setApiError(null);
+        setLoading(true);
+
+
+        Promise.all([
+            authRequest(auth, `${API_BASE_URL}/access/level`),
+            authRequest(auth, `${API_BASE_URL}/company/${company.selectedCompany.id}/team/${memberId}`)
+        ])
+            .then(async ([rolesRes, memberRes]) => {
+                if (!rolesRes || !rolesRes.ok || !memberRes || !memberRes.ok) {
+                    throw new Error("Failed to load data");
+                }
+
+                const levels = await rolesRes.json();
+                const memberData = await memberRes.json();
+
+                setAccessLevels(levels);
+                setMember(memberData);
             })
-                .then((res) => res.json())
-                .then((data) => {
-                    setAccessLevels(data);
-                    setLoading(false);
-                })
-                .catch(() => {
-                    setAccessLevels([]);
-                    setLoading(false);
-                });
-        }
-    }, [open]);
+            .catch(err => setApiError(err.message || "Failed to load member"))
+            .finally(() => setLoading(false));
+    }, [open, memberId]);
 
     const handleSubmit = async (values: {
         firstName: string;
@@ -72,99 +72,89 @@ export default function EditMemberModal({ open, onClose, member }: EditMemberMod
         email: string;
         level: string;
     }) => {
-        if (!member) return;
-
         try {
-            const response = await fetch(`${API_BASE_URL}/company/${company.selectedCompany.id}/team/${member.id}`, {
-                method: "PATCH",
-                headers: {
-                    "Authorization": `Bearer ${auth.user?.id_token}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(values),
-            });
+            const res = await authRequest(
+                auth,
+                `${API_BASE_URL}/company/${company.selectedCompany.id}/team/${memberId}`,
+                "PATCH",
+                values
+            );
 
-            if (!response.ok) {
-                throw new Error((await response.json()).message);
+            if (!res || !res.ok) {
+                const data = await res?.json();
+                throw new Error(data?.message || "Failed to update member");
             }
 
-            const updatedMember: Access = await response.json();
+            const updatedMember: Access = await res.json();
             onClose(updatedMember);
-        } catch (error) {
-            // @ts-ignore
-            setApiError(error.message || "An unexpected error occurred");
+        } catch (err: any) {
+            setApiError(err.message || "Update failed");
         }
     };
 
+    const user = member?.user as User;
+
     return (
         <Dialog open={open} onClose={() => onClose()} fullWidth maxWidth="sm">
-            <DialogTitle sx={{ pb: 2 }}>Edit Member</DialogTitle>
-            <DialogContent sx={{ overflow: "visible", pt: 1, pb: 3 }}>
-                {/* ✅ Error Message Display */}
-                {apiError && (
-                    <Alert severity="error" sx={{ mb: 2 }}>
-                        {apiError}
-                    </Alert>
-                )}
+            <DialogTitle sx={{pb: 2}}>Edit Member</DialogTitle>
+            <DialogContent sx={{overflow: "visible", pt: 1, pb: 3}}>
+                {apiError && <Alert severity="error" sx={{mb: 2}}>{apiError}</Alert>}
 
-                <Formik
-                    initialValues={{
-                        firstName: (member?.user as User).firstName || "",
-                        lastName: (member?.user as User).lastName || "",
-                        email: (member?.user as User).email || "",
-                        level: member.level || "",
-                    }}
-                    validationSchema={validationSchema}
-                    onSubmit={handleSubmit}
-                >
-                    {({ values, handleChange, handleBlur, errors, touched }) => (
-                        <Form>
-                            <Grid container spacing={2}>
-                                <Grid item xs={12} md={6}>
-                                    <TextField
-                                        fullWidth
-                                        label="First Name"
-                                        name="firstName"
-                                        value={values.firstName}
-                                        onChange={handleChange}
-                                        onBlur={handleBlur}
-                                        error={touched.firstName && Boolean(errors.firstName)}
-                                        helperText={touched.firstName && errors.firstName}
-                                        size="small"
-                                    />
-                                </Grid>
-                                <Grid item xs={12} md={6}>
-                                    <TextField
-                                        fullWidth
-                                        label="Last Name"
-                                        name="lastName"
-                                        value={values.lastName}
-                                        onChange={handleChange}
-                                        onBlur={handleBlur}
-                                        error={touched.lastName && Boolean(errors.lastName)}
-                                        helperText={touched.lastName && errors.lastName}
-                                        size="small"
-                                    />
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <TextField
-                                        fullWidth
-                                        label="Email"
-                                        type="email"
-                                        name="email"
-                                        value={values.email}
-                                        onChange={handleChange}
-                                        onBlur={handleBlur}
-                                        error={touched.email && Boolean(errors.email)}
-                                        helperText={touched.email && errors.email}
-                                        size="small"
-                                        disabled // Prevent email change
-                                    />
-                                </Grid>
-                                <Grid item xs={12}>
-                                    {loading ? (
-                                        <CircularProgress size={24} />
-                                    ) : (
+                {loading || !member ? (
+                    <CircularProgress sx={{mt: 4}}/>
+                ) : (
+                    <Formik
+                        initialValues={{
+                            firstName: user?.firstName || "",
+                            lastName: user?.lastName || "",
+                            email: user?.email || "",
+                            level: member.level || "",
+                        }}
+                        validationSchema={validationSchema}
+                        onSubmit={handleSubmit}
+                        enableReinitialize
+                    >
+                        {({values, handleChange, handleBlur, errors, touched}) => (
+                            <Form>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} md={6}>
+                                        <TextField
+                                            fullWidth
+                                            label="First Name"
+                                            name="firstName"
+                                            value={values.firstName}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.firstName && Boolean(errors.firstName)}
+                                            helperText={touched.firstName && errors.firstName}
+                                            size="small"
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} md={6}>
+                                        <TextField
+                                            fullWidth
+                                            label="Last Name"
+                                            name="lastName"
+                                            value={values.lastName}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            error={touched.lastName && Boolean(errors.lastName)}
+                                            helperText={touched.lastName && errors.lastName}
+                                            size="small"
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <TextField
+                                            fullWidth
+                                            label="Email"
+                                            type="email"
+                                            name="email"
+                                            value={values.email}
+                                            disabled
+                                            size="small"
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12}>
                                         <TextField
                                             select
                                             fullWidth
@@ -184,20 +174,20 @@ export default function EditMemberModal({ open, onClose, member }: EditMemberMod
                                                 </MenuItem>
                                             ))}
                                         </TextField>
-                                    )}
+                                    </Grid>
                                 </Grid>
-                            </Grid>
-                            <DialogActions sx={{ pt: 2, px: 0, display: "flex", justifyContent: "flex-end", gap: 2 }}>
-                                <Button onClick={() => onClose()} variant="contained" color="inherit">
-                                    Cancel
-                                </Button>
-                                <Button type="submit" variant="contained">
-                                    Save
-                                </Button>
-                            </DialogActions>
-                        </Form>
-                    )}
-                </Formik>
+                                <DialogActions sx={{pt: 2, px: 0, justifyContent: "flex-end", gap: 2}}>
+                                    <Button onClick={() => onClose()} variant="contained" color="inherit">
+                                        Cancel
+                                    </Button>
+                                    <Button type="submit" variant="contained">
+                                        Save
+                                    </Button>
+                                </DialogActions>
+                            </Form>
+                        )}
+                    </Formik>
+                )}
             </DialogContent>
         </Dialog>
     );
