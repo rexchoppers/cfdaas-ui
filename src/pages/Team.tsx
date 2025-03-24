@@ -237,7 +237,7 @@ export default function TeamPage() {
                         fetchTeamData();
                     }
                 }}
-                memberId={editMemberTarget?.userId}
+                memberId={editMemberTarget?.userId as string}
             />
 
 
