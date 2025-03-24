@@ -21,7 +21,7 @@ const getAuthToken = async (auth: AuthContextProps): Promise<string | null> => {
 export const authRequest = async (
     auth: AuthContextProps, // Pass OIDC auth context
     url: string,
-    method: "GET" | "POST" | "PUT" | "DELETE" = "GET",
+    method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH" = "GET",
     body: any = null, // Optional body for POST/PUT
     headers: Record<string, string> = {}, // Additional headers
     retry: boolean = true // Allow one retry on 401
