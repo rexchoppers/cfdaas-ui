@@ -169,6 +169,11 @@ export default function ProfilesPage() {
             <Typography variant="h4" gutterBottom>
                 Cloud Provider Profiles
             </Typography>
+            
+            {/* Description */}
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                Manage your cloud provider credentials and service accounts. Add, edit, or remove profiles for different cloud platforms (GCP, AWS, Azure) to enable automated deployments and resource management.
+            </Typography>
 
             {/* Profiles Data Grid */}
             <DataGrid

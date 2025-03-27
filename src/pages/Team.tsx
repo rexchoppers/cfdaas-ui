@@ -198,6 +198,11 @@ export default function TeamPage() {
                 Team Management
             </Typography>
 
+            {/* Description */}
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                Manage your team members and their access levels. Add new members, modify their roles, or remove them from your organization. Each member's role determines their permissions within the system.
+            </Typography>
+
             {/* Team Data Grid */}
             <DataGrid
                 rows={team}
