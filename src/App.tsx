@@ -3,6 +3,7 @@ import {Route, Routes} from "react-router-dom";
 import DashboardPage from "./pages/Dashboard.tsx";
 import ProcessesPage from "./pages/Processes.tsx";
 import TeamPage from "./pages/Team.tsx";
+import ProfilesPage from "./pages/Profiles.tsx";
 
 export default function App() {
     return (
@@ -11,6 +12,7 @@ export default function App() {
                 <Route index element={<DashboardPage/>}/>
                 <Route path="processes" element={<ProcessesPage/>}/>
                 <Route path="team" element={<TeamPage />} />
+                <Route path="profiles" element={<ProfilesPage />} />
                 {/*
                 <Route path="instances" element={<InstancesPage />} />
                 <Route path="profiles" element={<ProfilesPage />} />
