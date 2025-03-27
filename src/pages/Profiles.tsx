@@ -104,10 +104,8 @@ export default function ProfilesPage() {
             field: "createdBy",
             headerName: "Created By",
             flex: 1,
-            valueGetter: (params: any) => {
-                console.log(params);
-                const user = params?.row?.createdBy;
-                return user ? `${user.firstName} ${user.lastName}` : '-';
+            valueGetter: (createdBy: any) => {
+                return createdBy ? `${createdBy.firstName} ${createdBy.lastName}` : '-';
             }
         },
         {
