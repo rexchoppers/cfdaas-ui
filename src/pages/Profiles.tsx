@@ -16,6 +16,8 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
+import CheckIcon from "@mui/icons-material/Check";
+import CloseIcon from "@mui/icons-material/Close";
 import {useAuth} from "react-oidc-context";
 import {useCompany} from "../context/CompanyContext.tsx";
 import {authRequest} from "../utils/AuthenticatedRequestUtil.ts";
@@ -127,6 +129,17 @@ export default function ProfilesPage() {
             }
         },
         {field: "description", headerName: "Description", flex: 1},
+        {
+            field: "global",
+            headerName: "Global",
+            flex: 0.5,
+            type: 'boolean',
+            renderCell: (params) => (
+                params.value ?
+                <CheckIcon color="success" /> :
+                <CloseIcon color="error" />
+            )
+        },
         {
             field: "createdBy",
             headerName: "Created By",

@@ -10,7 +10,9 @@ import {
   MenuItem,
   CircularProgress,
   Alert,
-  Typography
+  Typography,
+  FormControlLabel,
+  Checkbox
 } from "@mui/material";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
@@ -37,6 +39,7 @@ const validationSchema = Yup.object().shape({
   platform: Yup.string().required("Platform is required"),
   credentialType: Yup.string().required("Credential type is required"),
   credentialData: Yup.string().required("Credential data is required"),
+  global: Yup.boolean(),
 });
 
 export default function AddProfileModal({ open, onClose }: AddProfileModalProps) {
@@ -58,6 +61,7 @@ export default function AddProfileModal({ open, onClose }: AddProfileModalProps)
     platform: Platform;
     credentialType: CredentialType;
     credentialData: string;
+    global: boolean;
   }) => {
     try {
       setLoading(true);
@@ -132,6 +136,7 @@ export default function AddProfileModal({ open, onClose }: AddProfileModalProps)
             platform: Platform.GCP,
             credentialType: CredentialType.GCP_SERVICE_ACCOUNT,
             credentialData: "",
+            global: false,
           }}
           validationSchema={validationSchema}
           onSubmit={handleSubmit}
@@ -228,6 +233,18 @@ export default function AddProfileModal({ open, onClose }: AddProfileModalProps)
                     error={touched.credentialData && Boolean(errors.credentialData)}
                     helperText={touched.credentialData && errors.credentialData}
                     size="small"
+                  />
+                </Grid>
+                <Grid item xs={12} sx={{ mt: 1 }}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        name="global"
+                        checked={values.global}
+                        onChange={handleChange}
+                      />
+                    }
+                    label="Global (available to all teams)"
                   />
                 </Grid>
               </Grid>
