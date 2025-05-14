@@ -20,6 +20,8 @@ import {useAuth} from "react-oidc-context";
 import {useCompany} from "../context/CompanyContext.tsx";
 import {authRequest} from "../utils/AuthenticatedRequestUtil.ts";
 import * as R from "remeda";
+import AddProfileModal from "../components/AddProfileModal.tsx";
+import {formatPlatformForDisplay, formatCredentialTypeForDisplay} from "../types/profile.types.ts";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -52,6 +54,7 @@ export default function ProfilesPage() {
     const [toast, setToast] = useState({open: false, message: "", severity: "success"});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [addProfileModalOpen, setAddProfileModalOpen] = useState(false);
 
     const hasFetchedRef = useRef(false);
 
@@ -97,8 +100,22 @@ export default function ProfilesPage() {
 
     const columns: GridColDef[] = [
         {field: "name", headerName: "Name", flex: 1},
-        {field: "platform", headerName: "Platform", flex: 1},
-        {field: "credentialType", headerName: "Credential Type", flex: 1},
+        {
+            field: "platform",
+            headerName: "Platform",
+            flex: 1,
+            valueFormatter: (value: string) => {
+                return formatPlatformForDisplay(value);
+            }
+        },
+        {
+            field: "credentialType",
+            headerName: "Credential Type",
+            flex: 1,
+            valueFormatter: (value: string) => {
+                return formatCredentialTypeForDisplay(value);
+            }
+        },
         {field: "description", headerName: "Description", flex: 1},
         {
             field: "createdBy",
@@ -169,7 +186,7 @@ export default function ProfilesPage() {
             <Typography variant="h4" gutterBottom>
                 Cloud Provider Profiles
             </Typography>
-            
+
             {/* Description */}
             <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
                 Manage your cloud provider credentials and service accounts. Add, edit, or remove profiles for different cloud platforms (GCP, AWS, Azure) to enable automated deployments and resource management.
@@ -193,9 +210,7 @@ export default function ProfilesPage() {
                     key="Add Profile"
                     icon={<AddIcon/>}
                     tooltipTitle="Add Profile"
-                    onClick={() => {
-                        // TODO: Implement add profile functionality
-                    }}
+                    onClick={() => setAddProfileModalOpen(true)}
                 />
             </SpeedDial>
 
@@ -210,6 +225,22 @@ export default function ProfilesPage() {
                     {toast.message}
                 </Alert>
             </Snackbar>
+
+            {/* Add Profile Modal */}
+            <AddProfileModal
+                open={addProfileModalOpen}
+                onClose={(success) => {
+                    setAddProfileModalOpen(false);
+                    if (success) {
+                        setToast({
+                            open: true,
+                            message: "Profile added successfully",
+                            severity: "success"
+                        });
+                        fetchProfilesData();
+                    }
+                }}
+            />
         </Box>
     );
 }
