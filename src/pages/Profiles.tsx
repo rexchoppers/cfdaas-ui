@@ -31,7 +31,17 @@ interface Profile {
     platform: string;
     credentialType: string;
     description?: string;
+    global: boolean;
     createdBy: {
+        id: string;
+        email: string;
+        firstName: string;
+        lastName: string;
+        active: boolean;
+        createdAt: string;
+        updatedAt: string;
+    } | null;
+    owner: {
         id: string;
         email: string;
         firstName: string;
